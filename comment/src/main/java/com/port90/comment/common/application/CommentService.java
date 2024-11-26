@@ -1,4 +1,4 @@
-package com.port90.comment.application;
+package com.port90.comment.common.application;
 
 import com.port90.comment.infrastructure.CommentRepository;
 import com.port90.comment.infrastructure.PasswordEncoder;

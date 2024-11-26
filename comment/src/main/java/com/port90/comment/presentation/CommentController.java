@@ -1,6 +1,6 @@
 package com.port90.comment.presentation;
 
-import com.port90.comment.application.CommentService;
+import com.port90.comment.common.application.CommentService;
 import com.port90.comment.common.dto.request.CommentCreateRequest;
 import com.port90.comment.common.dto.response.CommentCreateResponse;
 import jakarta.validation.Valid;
