@@ -1,8 +1,8 @@
 package com.port90.external.scheduler;
 
-import com.port90.external.service.HantoClient;
-import com.port90.external.service.chart.current.StockChartMinuteService;
-import com.port90.external.service.info.StockInfoService;
+import com.port90.external.common.client.HantoClient;
+import com.port90.external.common.application.chart.current.StockChartMinuteService;
+import com.port90.external.common.application.info.StockInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

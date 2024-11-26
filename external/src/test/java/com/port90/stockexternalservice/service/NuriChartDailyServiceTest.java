@@ -1,7 +1,7 @@
 package com.port90.stockexternalservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.port90.external.service.dto.NuriStockResponse;
+import com.port90.external.common.dto.NuriStockResponse;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
