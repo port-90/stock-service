@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Login Test</title>
+</head>
+<body>
+  <h1>Social Login Test</h1>
+
+  <button id="naver-login-btn">Login with Naver</button>
+  <button id="google-login-btn">Login with Google</button>
+  <button id="kakao-login-btn">Login with Kakao</button>
+
+  <script>
+    // 각 버튼 클릭 시 OAuth2 로그인 엔드포인트로 리디렉션
+    document.getElementById("naver-login-btn").addEventListener("click", function() {
+      window.location.href = "http://localhost:8080/oauth2/authorization/naver";
+    });
+
+    document.getElementById("google-login-btn").addEventListener("click", function() {
+      window.location.href = "http://localhost:8080/oauth2/authorization/google";
+    });
+
+    document.getElementById("kakao-login-btn").addEventListener("click", function() {
+      window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+    });
+  </script>
+</body>
+</html>
