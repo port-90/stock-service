@@ -1,5 +1,6 @@
 package com.port90.external.presentation;
 
+import com.port90.external.common.application.info.StockInfoKafkaProducer;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.application.chart.current.HantoChartMinuteService;
 import com.port90.external.common.application.info.NuriStockInfoService;
@@ -15,6 +16,7 @@ public class InitialDataController {
     private final HantoChartMinuteService hantoChartMinuteService;
     private final NuriStockInfoService nuriStockInfoService;
     private final HantoClient hantoClient;
+    private final StockInfoKafkaProducer stockInfoKafkaProducer;
     @GetMapping("/test")
     public void test() {
         hantoChartMinuteService.fetchAndSaveMinuteStockData("005930");
@@ -29,13 +31,23 @@ public class InitialDataController {
         stockChartDailyService.fetchAndSaveDailyStockData("005930");
     }
 
-    @GetMapping("/test3")
+    @GetMapping("/save/stock-info")
     public void test3() {
         nuriStockInfoService.fetchAndSaveAllStockInfoData();
+    }
+
+    @GetMapping("/send/stock-info")
+    public void test3_1() {
+        nuriStockInfoService.sendStockCodesToKafkaFromDB();
     }
 
     @GetMapping("/test4")
     public void test4() {
         hantoClient.login();
+    }
+
+    @GetMapping("/test5")
+    public void test5() {
+        //stockInfoKafkaProducer.sendStockCode("11111");
     }
 }

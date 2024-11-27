@@ -17,12 +17,15 @@ public class NuriStockInfoService implements StockInfoService {
 
     private final StockInfoRepository stockInfoRepository;
     private final NuriClient nuriClient;
+    private final StockInfoKafkaProducer stockInfoKafkaProducer;
 
     @Override
+    @Transactional
     public void fetchAndSaveAllStockInfoData() {
         List<NuriStockResponse> stockResponses = nuriClient.getStockInfo();
         System.out.println(stockResponses);
         convertToDomainAndSaveAll(stockResponses);
+        sendStockCodesToKafka(stockResponses);
     }
 
     @Override
@@ -30,7 +33,6 @@ public class NuriStockInfoService implements StockInfoService {
         return stockInfoRepository.findAllStockCodes();
     }
 
-    @Transactional
     public void convertToDomainAndSaveAll(List<NuriStockResponse> stockResponses) {
         for (NuriStockResponse stockResponse : stockResponses) {
             StockInfo stockInfo = new StockInfo(
@@ -47,5 +49,18 @@ public class NuriStockInfoService implements StockInfoService {
                 stockInfoRepository.save(stockInfo);
             }
         }
+    }
+
+    public void sendStockCodesToKafka(List<NuriStockResponse> stockResponses) {
+        List<String> stockCodes = stockResponses.stream()
+                .map(NuriStockResponse::getIsinCd)
+                .toList();
+
+        stockInfoKafkaProducer.sendStockCode(stockCodes);
+    }
+
+    public void sendStockCodesToKafkaFromDB() {
+        List<String> stockCodes = stockInfoRepository.findAllStockCodes();
+        stockInfoKafkaProducer.sendStockCode(stockCodes);
     }
 }
