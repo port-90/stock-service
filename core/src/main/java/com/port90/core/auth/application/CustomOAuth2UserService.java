@@ -58,7 +58,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             return new CustomOAuth2User(userDto);
         } else {
 
-            existData = User.updateNameAndEmail(oAuth2Response.getName(), oAuth2Response.getEmail());
+            existData.updateNameAndEmail(oAuth2Response.getName(), oAuth2Response.getEmail());
             userRepositoryImpl.save(existData);
 
             UserDto userDto = new UserDto();

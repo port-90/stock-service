@@ -25,10 +25,8 @@ public class User {
                 .build();
     }
 
-    public static User updateNameAndEmail(String name, String email) {
-        return User.builder()
-                .name(name)
-                .email(email)
-                .build();
+    public void updateNameAndEmail(String name, String email) {
+        this.name = name;
+        this.email = email;
     }
 }
