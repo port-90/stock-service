@@ -8,6 +8,8 @@ import com.port90.core.comment.infrastructure.impl.repository.persistence.mapper
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import static com.port90.core.comment.domain.exception.ErrorCode.COMMENT_NOT_FOUND;
 
 @Repository
@@ -36,5 +38,15 @@ public class CommentRepositoryImpl implements CommentRepository {
                 commentJpaRepository.findById(commentId)
                         .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND))
         );
+    }
+
+    @Override
+    public List<Long> findChildIdsByParentId(Long commentId) {
+        return commentJpaRepository.findChildIdsByParentId(commentId);
+    }
+
+    @Override
+    public int deleteAllByIdIn(List<Long> commentIds) {
+        return commentJpaRepository.deleteAllByIdIn(commentIds);
     }
 }
