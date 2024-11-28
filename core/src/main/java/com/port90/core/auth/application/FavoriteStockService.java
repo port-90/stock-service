@@ -6,6 +6,7 @@ import com.port90.core.auth.dto.response.FavoriteStockResponse;
 import com.port90.core.auth.infrastructure.FavoriteStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,5 +45,13 @@ public class FavoriteStockService {
                         .createdAt(stock.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void deleteFavoriteStock(Long userId, String stockCode) {
+        favoriteStockRepository.findByUserIdAndStockCode(userId, stockCode)
+                .orElseThrow(() -> new IllegalArgumentException("관심 주식이 존재하지 않습니다."));
+
+        favoriteStockRepository.deleteByUserIdAndStockCode(userId, stockCode);
     }
 }

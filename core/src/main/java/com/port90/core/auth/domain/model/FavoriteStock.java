@@ -20,6 +20,8 @@ public class FavoriteStock {
                 .userId(userId)
                 .stockCode(stockCode)
                 .stockName(stockName)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }

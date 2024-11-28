@@ -33,4 +33,10 @@ public class FavoriteStockController {
         List<FavoriteStockResponse> response = favoriteStockService.getFavoriteStocks(user.getUserId());
         return ResponseEntity.ok(response);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Void> deleteFavoriteStock(@RequestParam Long userId, @RequestParam String stockCode) {
+        favoriteStockService.deleteFavoriteStock(userId, stockCode);
+        return ResponseEntity.noContent().build();
+    }
 }
