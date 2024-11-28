@@ -1,5 +1,7 @@
 package com.port90.core.auth.application;
 
+import com.port90.core.auth.domain.exception.ErrorCode;
+import com.port90.core.auth.domain.exception.UserException;
 import com.port90.core.auth.domain.model.FavoriteStock;
 import com.port90.core.auth.dto.request.FavoriteStockRequest;
 import com.port90.core.auth.dto.response.FavoriteStockResponse;
@@ -21,7 +23,7 @@ public class FavoriteStockService {
     public FavoriteStockResponse addFavoriteStock(Long userId, FavoriteStockRequest request) {
         favoriteStockRepository.findByUserIdAndStockCode(userId, request.getStockCode())
                 .ifPresent(existing -> {
-                    throw new IllegalStateException("이미 추가된 관심 주식입니다.");
+                    throw new UserException(ErrorCode.ALREADY_ADDED_FAVORITE_STOCK);
                 });
 
         FavoriteStock favoriteStock = FavoriteStock.createFavoriteStock(userId, request.getStockCode(), request.getStockName());
@@ -50,7 +52,7 @@ public class FavoriteStockService {
     @Transactional
     public void deleteFavoriteStock(Long userId, String stockCode) {
         favoriteStockRepository.findByUserIdAndStockCode(userId, stockCode)
-                .orElseThrow(() -> new IllegalArgumentException("관심 주식이 존재하지 않습니다."));
+                .orElseThrow(() -> new UserException(ErrorCode.STOCK_NOT_FOUND));
 
         favoriteStockRepository.deleteByUserIdAndStockCode(userId, stockCode);
     }
