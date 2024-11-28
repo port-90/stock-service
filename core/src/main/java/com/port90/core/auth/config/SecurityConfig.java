@@ -3,6 +3,7 @@ package com.port90.core.auth.config;
 import com.port90.core.auth.application.CustomOAuth2UserService;
 import com.port90.core.auth.jwt.JWTFilter;
 import com.port90.core.auth.jwt.JWTUtil;
+import com.port90.core.auth.oauth2.CustomLogoutSuccessHandler;
 import com.port90.core.auth.oauth2.CustomSuccessHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
@@ -23,11 +24,13 @@ import java.util.Collections;
 public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
     private final JWTUtil jwtUtil;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, CustomLogoutSuccessHandler customLogoutSuccessHandler, JWTUtil jwtUtil) {
         this.customOAuth2UserService = customOAuth2UserService;
         this.customSuccessHandler = customSuccessHandler;
+        this.customLogoutSuccessHandler = customLogoutSuccessHandler;
         this.jwtUtil = jwtUtil;
     }
 
@@ -62,10 +65,17 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler))
                 .authorizeHttpRequests(auth -> auth             // 경로별 인가 설정
-                        .requestMatchers("/").permitAll()
+                        .requestMatchers("/", "/logout").permitAll()
                         .anyRequest().authenticated())
+                .logout(logout -> logout
+                        .logoutUrl("/logout")                           // 로그아웃 URL
+                        .logoutSuccessHandler(customLogoutSuccessHandler) // 성공 핸들러 추가
+                        .deleteCookies("Authorization")  // JWT 삭제
+                        .invalidateHttpSession(true)                     // 세션 무효화
+                )
                 .sessionManagement(session ->                   // 세션 설정: STATELESS
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         return http.build();
     }
 }
+

@@ -23,7 +23,6 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -31,10 +30,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String authorization = null;
         Cookie[] cookies = request.getCookies();
         for (Cookie cookie : cookies) {
-
-            log.info("cookie.getName : {}", cookie.getName());
             if (cookie.getName().equals("Authorization")) {
-
                 authorization = cookie.getValue();
             }
         }
