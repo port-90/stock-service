@@ -1,6 +1,7 @@
-package com.port90.core.auth.infrastructure.impl.repository.persistence.entity;
+package com.port90.core.auth.infrastructure.impl.repository.persistence;
 
 import com.port90.core.auth.domain.model.User;
+import com.port90.core.auth.infrastructure.impl.repository.persistence.entity.UserEntity;
 
 import java.util.Optional;
 

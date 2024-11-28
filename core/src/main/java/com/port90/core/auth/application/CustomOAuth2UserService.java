@@ -57,6 +57,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private CustomOAuth2User mapToCustomOAuth2User(User user) {
         UserDto userDto = new UserDto();
+        userDto.setUserId(user.getId());
         userDto.setUsername(user.getUsername());
         userDto.setName(user.getName());
         userDto.setRole(user.getRole());

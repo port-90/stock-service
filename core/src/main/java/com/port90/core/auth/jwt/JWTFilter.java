@@ -26,24 +26,32 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
-        String authorization = null;
-        Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals("Authorization")) {
-                authorization = cookie.getValue();
+        // 헤더에서 Authorization 값 가져오기
+        String authorization = request.getHeader("Authorization");
+
+        // 헤더 값이 없거나 형식이 올바르지 않을 경우 쿠키에서 가져오기
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            log.info("Authorization header not found or invalid. Checking cookies...");
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if ("Authorization".equals(cookie.getName())) {
+                        authorization = "Bearer " + cookie.getValue();
+                        break;
+                    }
+                }
             }
         }
 
-        //Authorization 헤더 검증
-        if (authorization == null) {
-            log.info("token null");
+        // 최종적으로 Authorization 값 확인
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
+            log.info("No valid token found.");
             filterChain.doFilter(request, response);
             return;
         }
 
         //토큰
-        String token = authorization;
+        String token = authorization.substring(7);
 
         //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
@@ -53,11 +61,13 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         //토큰에서 username과 role 획득
+        Long userId = jwtUtil.getUserId(token);
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
         //userDTO를 생성하여 값 set
         UserDto userDto = new UserDto();
+        userDto.setUserId(userId);
         userDto.setUsername(username);
         userDto.setRole(role);
 

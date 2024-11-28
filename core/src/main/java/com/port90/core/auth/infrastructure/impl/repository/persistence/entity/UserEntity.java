@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Entity(name = "User")
+@Entity(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String username;
-    private String name;
+    private String username;    // provider + id 형식
+    private String name;    // kakao, google : 닉네임, naver : 이름
     private String email;
     private String role;
 
