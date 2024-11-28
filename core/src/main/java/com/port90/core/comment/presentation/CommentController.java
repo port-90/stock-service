@@ -2,10 +2,9 @@ package com.port90.core.comment.presentation;
 
 import com.port90.core.comment.application.CommentService;
 import com.port90.core.comment.dto.request.CommentCreateRequest;
+import com.port90.core.comment.dto.request.CommentUpdateRequest;
 import com.port90.core.comment.dto.response.CommentCreateResponse;
-import com.port90.comment.common.application.CommentService;
-import com.port90.comment.common.dto.request.CommentCreateRequest;
-import com.port90.comment.common.dto.response.CommentCreateResponse;
+import com.port90.core.comment.dto.response.CommentUpdatedResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -26,4 +25,13 @@ public class CommentController {
         return commentService.create(userId, request);
     }
 
+    // TODO: Security Context Holder 에서 userId 가져오는 것으로 변경
+    @PatchMapping(value = {"/{commentId}", "/{userId}/{commentId}"})
+    public CommentUpdatedResponse update(
+            @PathVariable(required = false) Long userId,
+            @PathVariable Long commentId,
+            @RequestBody @Valid CommentUpdateRequest request
+    ) {
+        return commentService.update(userId, commentId, request);
+    }
 }

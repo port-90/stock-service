@@ -1,4 +1,4 @@
-package com.port90.core.comment.infrastructure.impl.repository.persistence;
+package com.port90.core.comment.infrastructure.impl.repository.persistence.mapper;
 
 import com.port90.core.comment.domain.model.Comment;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.CommentEntity;

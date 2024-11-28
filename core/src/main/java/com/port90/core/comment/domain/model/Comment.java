@@ -4,27 +4,20 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Getter
 @Builder
 public class Comment {
 
     private Long id;
-
     private Long userId;
-
     private String guestId;
-
     private String guestPassword;
-
     private String content;
-
     private Long parentId;
-
     private int likeCount;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     public static Comment createByUser(Long userId, String content, Long parentId) {
@@ -44,5 +37,21 @@ public class Comment {
                 .parentId(parentId)
                 .likeCount(0)
                 .build();
+    }
+
+    public boolean isUserComment() {
+        return this.userId != null && this.guestId == null;
+    }
+
+    public boolean isNotCreatedBy(Long userId) {
+        return !Objects.equals(this.userId, userId);
+    }
+
+    public boolean isGuestComment() {
+        return this.userId == null && (this.guestId != null && this.guestPassword != null);
+    }
+
+    public void updateContent(String content) {
+        this.content = content;
     }
 }

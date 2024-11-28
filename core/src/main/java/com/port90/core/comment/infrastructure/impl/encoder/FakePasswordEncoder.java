@@ -9,4 +9,9 @@ public class FakePasswordEncoder implements PasswordEncoder {
     public String encode(String password) {
         return password;
     }
+
+    @Override
+    public boolean matches(String rawPassword, String encodedPassword) {
+        return rawPassword.equals(encodedPassword);
+    }
 }

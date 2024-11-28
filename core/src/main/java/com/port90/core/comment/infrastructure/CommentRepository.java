@@ -6,4 +6,6 @@ public interface CommentRepository {
     Comment save(Comment comment);
 
     boolean existsByParentId(Long parentId);
+
+    Comment findById(Long commentId);
 }
