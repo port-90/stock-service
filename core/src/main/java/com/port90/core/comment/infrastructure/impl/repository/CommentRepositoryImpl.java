@@ -53,9 +53,18 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<Comment> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return commentQueryRepository
-                .findCommentsByStockCodeByCursor(stockCode, cursor, size)
+                .findParentCommentsByStockCodeByCursor(stockCode, cursor, size)
+                .stream()
+                .map(CommentMapper::toModel)
+                .toList();
+    }
+
+    @Override
+    public List<Comment> findChildCommentsByParentIdByCursor(Long parentId, Long cursor, int size) {
+        return commentQueryRepository
+                .findChildCommentsByParentIdByCursor(parentId, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();

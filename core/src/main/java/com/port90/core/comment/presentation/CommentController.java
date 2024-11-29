@@ -49,12 +49,21 @@ public class CommentController {
         commentService.delete(userId, commentId, request);
     }
 
-    @GetMapping
-    public List<Comment> getCommentList(
+    @GetMapping("/parent")
+    public List<Comment> getParentCommentList(
             @RequestParam String stockCode,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentList(stockCode, cursor, size);
+        return commentService.getParentCommentList(stockCode, cursor, size);
+    }
+
+    @GetMapping("/child")
+    public List<Comment> getChildCommentList(
+            @RequestParam Long parentId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "5") int size
+    ) {
+        return commentService.getChildCommentList(parentId, cursor, size);
     }
 }

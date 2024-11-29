@@ -16,9 +16,17 @@ public class CommentQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<CommentEntity> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<CommentEntity> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
                 .where(stockCodeEq(stockCode), parentIdIsNull(), idLessThan(cursor))
+                .orderBy(commentEntity.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    public List<CommentEntity> findChildCommentsByParentIdByCursor(Long parentId, Long cursor, int size) {
+        return jpaQueryFactory.selectFrom(commentEntity)
+                .where(parentIdEq(parentId), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())
                 .limit(size)
                 .fetch();
@@ -34,5 +42,9 @@ public class CommentQueryRepository {
 
     private BooleanExpression idLessThan(Long cursor) {
         return cursor != null ? commentEntity.id.lt(cursor) : null;
+    }
+
+    private BooleanExpression parentIdEq(Long parentId) {
+        return parentId != null ? commentEntity.parentId.eq(parentId) : null;
     }
 }
