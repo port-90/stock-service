@@ -70,6 +70,10 @@ public class CommentService {
         log.info("Comment ID: {} Deleted", comment.getId());
     }
 
+    public List<Comment> getCommentList(String stockCode, Long cursor, int size) {
+        return commentRepository.findCommentsByStockCodeByCursor(stockCode, cursor, size);
+    }
+
     private List<Long> findAllChildCommentIds(Long commentId) {
         List<Long> commentIds = new ArrayList<>();
         commentIds.add(commentId);

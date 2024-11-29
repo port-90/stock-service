@@ -4,6 +4,7 @@ import com.port90.core.comment.domain.exception.CommentException;
 import com.port90.core.comment.domain.model.Comment;
 import com.port90.core.comment.infrastructure.CommentRepository;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.CommentJpaRepository;
+import com.port90.core.comment.infrastructure.impl.repository.persistence.CommentQueryRepository;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,7 @@ import static com.port90.core.comment.domain.exception.ErrorCode.COMMENT_NOT_FOU
 public class CommentRepositoryImpl implements CommentRepository {
 
     private final CommentJpaRepository commentJpaRepository;
+    private final CommentQueryRepository commentQueryRepository;
 
     @Override
     public Comment save(Comment comment) {
@@ -48,5 +50,14 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public int deleteAllByIdIn(List<Long> commentIds) {
         return commentJpaRepository.deleteAllByIdIn(commentIds);
+    }
+
+    @Override
+    public List<Comment> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+        return commentQueryRepository
+                .findCommentsByStockCodeByCursor(stockCode, cursor, size)
+                .stream()
+                .map(CommentMapper::toModel)
+                .toList();
     }
 }

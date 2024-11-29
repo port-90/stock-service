@@ -1,6 +1,7 @@
 package com.port90.core.comment.presentation;
 
 import com.port90.core.comment.application.CommentService;
+import com.port90.core.comment.domain.model.Comment;
 import com.port90.core.comment.dto.request.CommentCreateRequest;
 import com.port90.core.comment.dto.request.CommentDeleteRequest;
 import com.port90.core.comment.dto.request.CommentUpdateRequest;
@@ -9,6 +10,8 @@ import com.port90.core.comment.dto.response.CommentUpdatedResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/comments")
@@ -44,5 +47,14 @@ public class CommentController {
             @RequestBody CommentDeleteRequest request
     ) {
         commentService.delete(userId, commentId, request);
+    }
+
+    @GetMapping
+    public List<Comment> getCommentList(
+            @RequestParam String stockCode,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return commentService.getCommentList(stockCode, cursor, size);
     }
 }

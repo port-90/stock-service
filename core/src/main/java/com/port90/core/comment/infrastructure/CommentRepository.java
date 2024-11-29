@@ -14,4 +14,6 @@ public interface CommentRepository {
     List<Long> findChildIdsByParentId(Long commentId);
 
     int deleteAllByIdIn(List<Long> commentIds);
+
+    List<Comment> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size);
 }
