@@ -8,6 +8,7 @@ import com.port90.core.comment.dto.request.CommentUpdateRequest;
 import com.port90.core.comment.dto.response.CommentCreateResponse;
 import com.port90.core.comment.dto.response.CommentUpdatedResponse;
 import com.port90.core.comment.infrastructure.CommentRepository;
+import com.port90.core.comment.infrastructure.ExternalClient;
 import com.port90.core.comment.infrastructure.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final GuestIdGenerator guestIdGenerator;
     private final PasswordEncoder passwordEncoder;
+    private final ExternalClient externalClient;
 
     public CommentCreateResponse create(Long userId, CommentCreateRequest request) {
 
@@ -87,12 +89,16 @@ public class CommentService {
         if (request.parentId() != null && !commentRepository.existsByParentId(request.parentId())) {
             throw new CommentException(PARENT_NOT_FOUND);
         }
+        if (!externalClient.existsByStockCode(request.stockCode())) {
+            throw new CommentException(STOCK_CODE_NOT_FOUND);
+        }
     }
 
     private Comment createComment(Long userId, CommentCreateRequest request) {
         return userId != null
-                ? Comment.createByUser(userId, request.content(), request.parentId())
+                ? Comment.createByUser(userId, request.stockCode(), request.content(), request.parentId())
                 : Comment.createByGuest(
+                request.stockCode(),
                 guestIdGenerator.generate(),
                 passwordEncoder.encode(request.guestPassword()),
                 request.content(),

@@ -11,6 +11,7 @@ import java.util.Objects;
 public class Comment {
 
     private Long id;
+    private String stockCode;
     private Long userId;
     private String guestId;
     private String guestPassword;
@@ -20,17 +21,19 @@ public class Comment {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public static Comment createByUser(Long userId, String content, Long parentId) {
+    public static Comment createByUser(Long userId, String stockCode, String content, Long parentId) {
         return Comment.builder()
                 .userId(userId)
+                .stockCode(stockCode)
                 .content(content)
                 .parentId(parentId)
                 .likeCount(0)
                 .build();
     }
 
-    public static Comment createByGuest(String guestId, String guestPassword, String content, Long parentId) {
+    public static Comment createByGuest(String stockCode, String guestId, String guestPassword, String content, Long parentId) {
         return Comment.builder()
+                .stockCode(stockCode)
                 .guestId(guestId)
                 .guestPassword(guestPassword)
                 .content(content)
