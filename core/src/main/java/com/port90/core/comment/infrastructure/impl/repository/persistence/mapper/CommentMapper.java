@@ -1,4 +1,4 @@
-package com.port90.core.comment.infrastructure.impl.repository.persistence;
+package com.port90.core.comment.infrastructure.impl.repository.persistence.mapper;
 
 import com.port90.core.comment.domain.model.Comment;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.CommentEntity;
@@ -8,6 +8,7 @@ public class CommentMapper {
     public static CommentEntity toEntity(Comment comment) {
         return CommentEntity.builder()
                 .id(comment.getId())
+                .stockCode(comment.getStockCode())
                 .userId(comment.getUserId())
                 .guestId(comment.getGuestId())
                 .guestPassword(comment.getGuestPassword())
@@ -22,6 +23,7 @@ public class CommentMapper {
     public static Comment toModel(CommentEntity commentEntity) {
         return Comment.builder()
                 .id(commentEntity.getId())
+                .stockCode(commentEntity.getStockCode())
                 .userId(commentEntity.getUserId())
                 .guestId(commentEntity.getGuestId())
                 .guestPassword(commentEntity.getGuestPassword())

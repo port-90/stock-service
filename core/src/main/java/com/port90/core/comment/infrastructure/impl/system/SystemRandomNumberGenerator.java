@@ -1,4 +1,4 @@
-package com.port90.core.comment.infrastructure.impl.random;
+package com.port90.core.comment.infrastructure.impl.system;
 
 import com.port90.core.comment.infrastructure.RandomNumberGenerator;
 import org.springframework.stereotype.Component;

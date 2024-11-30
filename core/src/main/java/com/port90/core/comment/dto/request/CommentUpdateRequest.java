@@ -1,13 +1,10 @@
 package com.port90.core.comment.dto.request;
 
 import jakarta.annotation.Nullable;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record CommentCreateRequest(
+public record CommentUpdateRequest(
         @Size(max = 300, message = "Content must not exceed 300 characters") String content,
-        @NotBlank String stockCode,
-        @Nullable Long parentId,
         @Nullable String guestPassword
 ) {
 }

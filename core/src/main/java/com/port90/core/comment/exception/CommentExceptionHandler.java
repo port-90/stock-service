@@ -18,5 +18,6 @@ public class CommentExceptionHandler {
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
                 .body(ErrorResponse.from(e.getErrorCode().name(), e.getMessage()));
+
     }
 }
