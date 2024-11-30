@@ -1,10 +1,10 @@
 package com.port90.external.common.application.chart.current;
 
-import com.port90.external.domain.chart.StockChartMinute;
-import com.port90.external.domain.chart.StockChartMinuteId;
-import com.port90.external.infrastructure.StockChartMinuteRepository;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.dto.StockResponse;
+import com.port90.stockdomain.domain.chart.StockChartMinute;
+import com.port90.stockdomain.domain.chart.StockChartMinuteId;
+import com.port90.stockdomain.infrastructure.StockChartMinuteRepository;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

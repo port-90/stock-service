@@ -1,4 +1,4 @@
-package com.port90.external.domain.info;
+package com.port90.stockdomain.domain.info;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,4 +1,4 @@
-package com.port90.external.domain.chart;
+package com.port90.stockdomain.domain.chart;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

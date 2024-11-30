@@ -2,11 +2,11 @@ package com.port90.external.common.application.chart.past;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.port90.external.domain.chart.StockChartDaily;
-import com.port90.external.domain.chart.StockChartDailyId;
-import com.port90.external.infrastructure.StockChartDailyRepository;
 import com.port90.external.common.client.NuriClient;
 import com.port90.external.common.dto.NuriStockResponse;
+import com.port90.stockdomain.domain.chart.StockChartDaily;
+import com.port90.stockdomain.domain.chart.StockChartDailyId;
+import com.port90.stockdomain.infrastructure.StockChartDailyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

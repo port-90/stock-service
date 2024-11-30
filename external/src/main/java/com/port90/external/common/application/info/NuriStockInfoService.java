@@ -1,9 +1,9 @@
 package com.port90.external.common.application.info;
 
-import com.port90.external.domain.info.StockInfo;
-import com.port90.external.infrastructure.StockInfoRepository;
 import com.port90.external.common.client.NuriClient;
 import com.port90.external.common.dto.NuriStockResponse;
+import com.port90.stockdomain.domain.info.StockInfo;
+import com.port90.stockdomain.infrastructure.StockInfoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

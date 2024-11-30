@@ -1,4 +1,4 @@
-package com.port90.external.domain.chart;
+package com.port90.stockdomain.domain.chart;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;

@@ -1,7 +1,7 @@
-package com.port90.external.infrastructure;
+package com.port90.stockdomain.infrastructure;
 
-import com.port90.external.domain.chart.StockChartMinute;
-import com.port90.external.domain.chart.StockChartMinuteId;
+import com.port90.stockdomain.domain.chart.StockChartMinute;
+import com.port90.stockdomain.domain.chart.StockChartMinuteId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
