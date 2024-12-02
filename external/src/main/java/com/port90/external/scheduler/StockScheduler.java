@@ -2,10 +2,14 @@ package com.port90.external.scheduler;
 
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.application.info.StockInfoService;
+import com.port90.external.domain.HantoCredential;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,7 +21,8 @@ public class StockScheduler {
 
     @Scheduled(cron = "0 1 * * * ?")
     public void login() {
-        hantoClient.loginAll();
+        List<HantoCredential> hantoCredentials = hantoClient.loginAll();
+        hantoClient.isHoliday(hantoCredentials.getFirst(), LocalDate.now());
     }
 
     @Scheduled(cron = "0 2 * * * ?")

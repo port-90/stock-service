@@ -3,9 +3,14 @@ package com.port90.external.presentation;
 import com.port90.external.common.application.chart.current.StockChartMultiThread;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.application.chart.past.StockChartDailyService;
+import com.port90.external.domain.HantoCredential;
+import com.port90.external.repository.HantoCredentialRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -14,6 +19,7 @@ public class TestController {
 
     private final HantoClient hantoClient;
     private final StockChartMultiThread stockChartMultiThread;
+    private final HantoCredentialRepository credentialRepository;
 
     @GetMapping("/fetchNsave/chart/daily")
     public void test2() {
@@ -27,6 +33,14 @@ public class TestController {
 
     @GetMapping("/login")
     public void test4() {
-        hantoClient.loginAll();
+        List<HantoCredential> hantoCredentials = hantoClient.loginAll();
+        hantoClient.isHoliday(hantoCredentials.getFirst(), LocalDate.now());
+    }
+
+    @GetMapping("/holiday")
+    public void test6() {
+        List<HantoCredential> hantoCredentials = credentialRepository.findAll();
+        String test = hantoClient.isHoliday(hantoCredentials.getFirst(), LocalDate.now());
+        System.out.println(test);
     }
 }

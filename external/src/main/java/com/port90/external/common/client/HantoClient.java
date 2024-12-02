@@ -12,6 +12,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,11 +41,18 @@ public class HantoClient {
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Transactional
-    public void loginAll() {
+    public List<HantoCredential> loginAll() {
         List<HantoCredential> hantoCredentials = hantoCredentialRepository.findAll();
         for (HantoCredential hantoCredential : hantoCredentials) {
             hantoCredential.setAccessToken(getAccessToken(hantoCredential));
         }
+        return hantoCredentials;
+    }
+
+
+    @Cacheable(value = "credential" , key="'all'")
+    public List<HantoCredential> getCredentials() {
+        return hantoCredentialRepository.findAll();
     }
 
     private String getAccessToken(HantoCredential hantoCredential) {
@@ -62,6 +71,44 @@ public class HantoClient {
         );
 
         return response.getAccessToken();
+    }
+
+    // 국내 휴장일조회
+    @Cacheable(value = "holiday", key = "#baseDate")
+    public String isHoliday(HantoCredential hantoCredential, LocalDate baseDate) {
+
+        log.info("start holiday");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String nowStr = baseDate.format(timeFormatter);
+        String url = UriComponentsBuilder.fromUriString(BASE_URL)
+                .path("/chk-holiday")
+                .queryParam("BASS_DT", nowStr)
+                .queryParam("CTX_AREA_NK", "")
+                .queryParam("CTX_AREA_FK", "")
+                .toUriString();
+
+        log.info("[URL] {}", url);
+
+        // 요청 헤더 구성
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json; charset=UTF-8");
+        headers.set("authorization", "Bearer " + hantoCredential.getAccessToken());
+        headers.set("appkey", hantoCredential.getAppKey());
+        headers.set("appsecret", hantoCredential.getAppSecret());
+        headers.set("tr_id", "CTCA0903R");
+        headers.set("custtype", "P");
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        // API 호출
+        ResponseEntity<String> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                entity,
+                String.class
+        );
+        log.info("[STOCK API - HOLIDAY] {}, {}", response.getStatusCode(), response.getBody());
+
+        return getHolidayResponses(response);
     }
 
     // 주식당일분봉조회
@@ -100,10 +147,27 @@ public class HantoClient {
         );
         log.info("[STOCK API - MINUTE] {}, {}", response.getStatusCode(), response.getBody());
 
-        return getResponses(stockCode, response);
+        return getDailyMintueResponses(stockCode, response);
     }
 
-    public List<StockResponse> getResponses(String stockCode, ResponseEntity<String> response) {
+    private String getHolidayResponses(ResponseEntity<String> response) {
+        try {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
+            JSONArray list = (JSONArray) jsonObject.get("output");
+            JSONObject first = (JSONObject) list.getFirst();
+
+            String baseDateTime = (String) first.get("bass_dt");
+            String isOpen = (String) first.get("opnd_yn");
+            log.info("[CHK_HOLIDAY] {}: {}" , baseDateTime, isOpen);
+            return isOpen;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private List<StockResponse> getDailyMintueResponses(String stockCode, ResponseEntity<String> response) {
         List<StockResponse> stockResponses = new ArrayList<>();
         try {
             JSONParser jsonParser = new JSONParser();
