@@ -1,7 +1,6 @@
 package com.port90.external.common.application.chart.past;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.port90.external.common.client.NuriClient;
 import com.port90.external.common.dto.NuriStockResponse;
 import com.port90.stockdomain.domain.chart.StockChartDaily;
@@ -21,7 +20,6 @@ public class NuriChartDailyService implements StockChartDailyService {
 
     private final StockChartDailyRepository stockChartDailyRepository;
     private final NuriClient nuriClient;
-    private final ObjectMapper objectMapper;
 
     @Override
     public void fetchAndSaveDailyStockData(String stockCode) {
