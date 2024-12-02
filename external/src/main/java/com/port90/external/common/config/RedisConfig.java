@@ -22,6 +22,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
@@ -44,6 +45,7 @@ public class RedisConfig {
 
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
                 .allowIfBaseType(List.class)
+                .allowIfSubType(ArrayList.class) // ArrayList를 반드시 명시적으로 허용해 줘야 함.
                 .allowIfSubType(HantoCredential.class) // 특정 클래스 허용
                 .build();
 
