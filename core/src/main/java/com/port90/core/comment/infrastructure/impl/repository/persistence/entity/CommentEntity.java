@@ -41,6 +41,8 @@ public class CommentEntity {
 
     private int likeCount;
 
+    private boolean hasChildren;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;

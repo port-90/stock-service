@@ -15,6 +15,7 @@ public class CommentMapper {
                 .content(comment.getContent())
                 .parentId(comment.getParentId())
                 .likeCount(comment.getLikeCount())
+                .hasChildren(comment.isHasChildren())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .build();
@@ -30,6 +31,7 @@ public class CommentMapper {
                 .content(commentEntity.getContent())
                 .parentId(commentEntity.getParentId())
                 .likeCount(commentEntity.getLikeCount())
+                .hasChildren(commentEntity.isHasChildren())
                 .createdAt(commentEntity.getCreatedAt())
                 .updatedAt(commentEntity.getUpdatedAt())
                 .build();
