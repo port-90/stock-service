@@ -18,4 +18,6 @@ public interface CommentRepository {
     List<Comment> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size);
 
     List<Comment> findChildCommentsByParentIdByCursor(Long parentId, Long cursor, int size);
+
+    long countByParentId(Long parentId);
 }

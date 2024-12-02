@@ -12,4 +12,6 @@ public interface StockInfoRepository extends JpaRepository<StockInfo, String> {
 
     @Query("SELECT s.stockCode from StockInfo s")
     List<String> findAllStockCodes();
+
+    boolean existsByStockCode(String stockCode);
 }

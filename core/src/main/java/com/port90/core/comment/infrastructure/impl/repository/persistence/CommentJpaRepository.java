@@ -18,4 +18,6 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
     @Modifying
     @Query("delete from Comment c where c.id in :commentIds")
     int deleteAllByIdIn(@Param("commentIds") List<Long> commentIds);
+
+    long countByParentId(Long parentId);
 }

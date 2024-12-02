@@ -69,4 +69,9 @@ public class CommentRepositoryImpl implements CommentRepository {
                 .map(CommentMapper::toModel)
                 .toList();
     }
+
+    @Override
+    public long countByParentId(Long parentId) {
+        return commentJpaRepository.countByParentId(parentId);
+    }
 }

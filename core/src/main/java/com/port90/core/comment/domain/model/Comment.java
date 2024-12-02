@@ -18,6 +18,7 @@ public class Comment {
     private String content;
     private Long parentId;
     private int likeCount;
+    private boolean hasChildren;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -28,6 +29,7 @@ public class Comment {
                 .content(content)
                 .parentId(parentId)
                 .likeCount(0)
+                .hasChildren(false)
                 .build();
     }
 
@@ -39,6 +41,7 @@ public class Comment {
                 .content(content)
                 .parentId(parentId)
                 .likeCount(0)
+                .hasChildren(false)
                 .build();
     }
 
@@ -56,5 +59,17 @@ public class Comment {
 
     public void updateContent(String content) {
         this.content = content;
+    }
+
+    public void existChildren() {
+        this.hasChildren = true;
+    }
+
+    public boolean hasParent() {
+        return this.parentId != null;
+    }
+
+    public void nonExistChildren() {
+        this.hasChildren = false;
     }
 }
