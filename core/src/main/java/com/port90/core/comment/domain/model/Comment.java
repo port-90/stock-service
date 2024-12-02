@@ -1,10 +1,13 @@
 package com.port90.core.comment.domain.model;
 
+import com.port90.core.like.domain.exception.LikeException;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+
+import static com.port90.core.like.domain.exception.LikeErrorCode.LIKE_CAN_NOT_BE_LESS_THAN_ZERO;
 
 @Getter
 @Builder
@@ -71,5 +74,16 @@ public class Comment {
 
     public void nonExistChildren() {
         this.hasChildren = false;
+    }
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount == 0) {
+            throw new LikeException(LIKE_CAN_NOT_BE_LESS_THAN_ZERO);
+        }
+        this.likeCount--;
     }
 }
