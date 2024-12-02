@@ -11,6 +11,8 @@ public interface CommentRepository {
 
     Comment findById(Long commentId);
 
+    Comment findByIdWithOptimisticLock(Long commentId);
+
     List<Long> findChildIdsByParentId(Long commentId);
 
     int deleteAllByIdIn(List<Long> commentIds);

@@ -2,6 +2,7 @@ package com.port90.core.comment.application;
 
 import com.port90.core.auth.domain.model.User;
 import com.port90.core.auth.infrastructure.UserRepository;
+import com.port90.core.comment.aop.Retry;
 import com.port90.core.comment.domain.exception.CommentException;
 import com.port90.core.comment.domain.model.Comment;
 import com.port90.core.comment.dto.CommentDto;
@@ -24,7 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.port90.core.comment.domain.exception.ErrorCode.*;
+import static com.port90.core.comment.domain.exception.CommentErrorCode.*;
 
 @Slf4j
 @Service
@@ -92,6 +93,20 @@ public class CommentService {
         List<Comment> comments = commentRepository.findChildCommentsByParentIdByCursor(parentId, cursor, size);
 
         return getCommentDtos(comments);
+    }
+
+    @Retry
+    public void increaseLikeCount(Long commentId) {
+        Comment comment = commentRepository.findByIdWithOptimisticLock(commentId);
+        comment.increaseLikeCount();
+        commentRepository.save(comment);
+    }
+
+    @Retry
+    public void decreaseLikeCount(Long commentId) {
+        Comment comment = commentRepository.findByIdWithOptimisticLock(commentId);
+        comment.decreaseLikeCount();
+        commentRepository.save(comment);
     }
 
     private List<Long> findAllChildCommentIds(Long commentId) {

@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum ErrorCode {
+public enum CommentErrorCode {
 
     PARENT_NOT_FOUND(HttpStatus.BAD_REQUEST, "부모 댓글이 존재하지 않습니다."),
     GUEST_PASSWORD_REQUIRED(HttpStatus.BAD_REQUEST, "비회원 비밀번호가 필요합니다"),
