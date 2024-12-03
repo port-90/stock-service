@@ -7,6 +7,8 @@ import com.port90.core.auth.infrastructure.impl.repository.persistence.UserMappe
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
@@ -23,5 +25,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User findByUsername(String username) {
         return UserMapper.toModel(jpaRepository.findByUsername(username));
+    }
+
+    @Override
+    public List<User> findAllByIdIn(List<Long> userIds) {
+        return userJpaRepository.findAllByIdIn(userIds)
+                .stream()
+                .map(UserMapper::toModel)
+                .toList();
     }
 }

@@ -11,6 +11,8 @@ public interface CommentRepository {
 
     Comment findById(Long commentId);
 
+    Comment findByIdWithOptimisticLock(Long commentId);
+
     List<Long> findChildIdsByParentId(Long commentId);
 
     int deleteAllByIdIn(List<Long> commentIds);
@@ -18,4 +20,6 @@ public interface CommentRepository {
     List<Comment> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size);
 
     List<Comment> findChildCommentsByParentIdByCursor(Long parentId, Long cursor, int size);
+
+    long countByParentId(Long parentId);
 }
