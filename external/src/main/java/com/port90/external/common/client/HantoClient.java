@@ -13,13 +13,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
@@ -32,13 +29,19 @@ import java.util.List;
 @RequiredArgsConstructor
 @Component
 public class HantoClient {
+    private final HantoCredentialRepository hantoCredentialRepository;
+    private final HantoApiService hantoApiService;
+
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
+
     @Value("${hanto.loginUrl}")
     private String LOGIN_URL;
 
-    private final HantoCredentialRepository hantoCredentialRepository;
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Cacheable(value = "credential", key = "'all'")
+    public List<HantoCredential> getCredentials() {
+        return hantoCredentialRepository.findAll();
+    }
 
     @Transactional
     public List<HantoCredential> loginAll() {
@@ -49,35 +52,9 @@ public class HantoClient {
         return hantoCredentials;
     }
 
-
-    @Cacheable(value = "credential" , key="'all'")
-    public List<HantoCredential> getCredentials() {
-        return hantoCredentialRepository.findAll();
-    }
-
-    private String getAccessToken(HantoCredential hantoCredential) {
-        String url = UriComponentsBuilder.fromUriString(LOGIN_URL)
-                .toUriString();
-        log.info("[URL] {}", url);
-
-        // 요청 바디 설정
-        HantoLoginRequest loginRequest = new HantoLoginRequest(hantoCredential.getAppSecret(), hantoCredential.getAppKey());
-
-        // API 호출
-        HantoLoginResponse response = restTemplate.postForObject(
-                url,
-                loginRequest,
-                HantoLoginResponse.class
-        );
-
-        return response.getAccessToken();
-    }
-
     // 국내 휴장일조회
     @Cacheable(value = "holiday", key = "#baseDate")
     public String isHoliday(HantoCredential hantoCredential, LocalDate baseDate) {
-
-        log.info("start holiday");
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String nowStr = baseDate.format(timeFormatter);
         String url = UriComponentsBuilder.fromUriString(BASE_URL)
@@ -87,25 +64,11 @@ public class HantoClient {
                 .queryParam("CTX_AREA_FK", "")
                 .toUriString();
 
-        log.info("[URL] {}", url);
-
         // 요청 헤더 구성
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json; charset=UTF-8");
-        headers.set("authorization", "Bearer " + hantoCredential.getAccessToken());
-        headers.set("appkey", hantoCredential.getAppKey());
-        headers.set("appsecret", hantoCredential.getAppSecret());
-        headers.set("tr_id", "CTCA0903R");
-        headers.set("custtype", "P");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        HttpHeaders headers = buildHeaders(hantoCredential, "CTCA0903R");
 
         // API 호출
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                String.class
-        );
+        ResponseEntity<String> response = hantoApiService.getForObject(url, headers, String.class);
         log.info("[STOCK API - HOLIDAY] {}, {}", response.getStatusCode(), response.getBody());
 
         return getHolidayResponses(response);
@@ -126,28 +89,32 @@ public class HantoClient {
                 .queryParam("FID_INPUT_HOUR_1", nowStr)
                 .queryParam("FID_PW_DATA_INCU_YN", "N")
                 .toUriString();
-        log.info("[URL] {}", url);
 
         // 요청 헤더 구성
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHKST03010200");
+
+        // API 호출
+        ResponseEntity<String> response = hantoApiService.getForObject(url, headers, String.class);
+        log.info("[STOCK API - MINUTE] {}, {}", response.getStatusCode(), response.getBody());
+
+        return getDailyMintueResponses(stockCode, response);
+    }
+
+    private String getAccessToken(HantoCredential hantoCredential) {
+        HantoLoginRequest loginRequest = new HantoLoginRequest(hantoCredential.getAppSecret(), hantoCredential.getAppKey());
+        HantoLoginResponse response = hantoApiService.postForObject(LOGIN_URL, loginRequest, HantoLoginResponse.class);
+        return response.getAccessToken();
+    }
+
+    private HttpHeaders buildHeaders(HantoCredential hantoCredential, String transactionId) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json; charset=UTF-8");
         headers.set("authorization", "Bearer " + hantoCredential.getAccessToken());
         headers.set("appkey", hantoCredential.getAppKey());
         headers.set("appsecret", hantoCredential.getAppSecret());
-        headers.set("tr_id", "FHKST03010200"); // 국내 주식 시세 조회 TR ID
+        headers.set("tr_id", transactionId);
         headers.set("custtype", "P");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        // API 호출
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                String.class
-        );
-        log.info("[STOCK API - MINUTE] {}, {}", response.getStatusCode(), response.getBody());
-
-        return getDailyMintueResponses(stockCode, response);
+        return headers;
     }
 
     private String getHolidayResponses(ResponseEntity<String> response) {
@@ -159,7 +126,7 @@ public class HantoClient {
 
             String baseDateTime = (String) first.get("bass_dt");
             String isOpen = (String) first.get("opnd_yn");
-            log.info("[CHK_HOLIDAY] {}: {}" , baseDateTime, isOpen);
+            log.info("[CHK_HOLIDAY] {}: {}", baseDateTime, isOpen);
             return isOpen;
         } catch (ParseException e) {
             e.printStackTrace();
@@ -194,5 +161,4 @@ public class HantoClient {
         }
         return stockResponses;
     }
-
 }
