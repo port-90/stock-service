@@ -1,16 +1,30 @@
 package com.port90.core.auth.presentation;
 
-import org.springframework.stereotype.Controller;
+import com.port90.core.auth.application.UserService;
+import com.port90.core.auth.dto.request.CustomOAuth2User;
+import com.port90.core.auth.dto.response.CommentResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/mypage")
 public class MyController {
+    private final UserService userService;
 
-    @GetMapping("/my")
-    @ResponseBody
+    @GetMapping("")
     public String myAPI() {
 
         return "my route";
+    }
+
+    @GetMapping("/comments")
+    public Page<CommentResponse> getMyComments(@AuthenticationPrincipal CustomOAuth2User user, Pageable pageable) {
+        return userService.getCommentsByUserId(user.getUserId(), pageable);
     }
 }

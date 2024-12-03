@@ -7,6 +7,8 @@ import com.port90.core.comment.infrastructure.impl.repository.persistence.Commen
 import com.port90.core.comment.infrastructure.impl.repository.persistence.CommentQueryRepository;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.mapper.CommentMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -79,5 +81,11 @@ public class CommentRepositoryImpl implements CommentRepository {
     @Override
     public long countByParentId(Long parentId) {
         return commentJpaRepository.countByParentId(parentId);
+    }
+
+    @Override
+    public Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable) {
+        return commentJpaRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+                .map(CommentMapper::toModel);
     }
 }
