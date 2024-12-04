@@ -4,14 +4,17 @@ import com.port90.external.common.application.chart.current.StockChartMultiThrea
 import com.port90.external.common.application.info.StockInfoService;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.application.chart.past.StockChartDailyService;
+import com.port90.external.common.dto.StockResponse;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -50,5 +53,12 @@ public class TestController {
     @GetMapping("/stock-info")
     public void saveStockInfo() {
         stockInfoService.fetchAndSaveAllStockInfoData();
+    }
+
+
+    @GetMapping("/fetchNsave/chart/minute/{stockCode}")
+    public List<StockResponse> getStockChartMinuteOne(@PathVariable String stockCode) {
+        List<HantoCredential> hantoCredentials = credentialRepository.findAll();
+        return hantoClient.getDailyMinute(hantoCredentials.getFirst(), stockCode, LocalTime.now());
     }
 }

@@ -95,7 +95,7 @@ public class HantoClient {
 
         // API 호출
         ResponseEntity<String> response = hantoApiService.getForObject(url, headers, String.class);
-        log.info("[STOCK API - MINUTE] {}, {}", response.getStatusCode(), response.getBody());
+        log.info("[STOCK API - MINUTE] {}", response.getStatusCode());
 
         return getDailyMintueResponses(stockCode, response);
     }

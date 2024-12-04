@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,26 +29,33 @@ public class StockChartTask {
         LocalTime baseTime = LocalTime.now();
         for (String stockCode : stockCodes) {
             List<StockResponse> responses = hantoClient.getDailyMinute(credentials, stockCode, baseTime);
-            log.info("[API CALLED] {}", stockCode);
+            log.info("[API CALLED] {}", responses.size());
             convertToDomainAndSaveAllChartMinuteData(responses);
         }
     }
 
     public void convertToDomainAndSaveAllChartMinuteData(List<StockResponse> stockResponses) {
         StockChartMinute recentSavedStock = new StockChartMinute();
-
         for (int i = 0; i < stockResponses.size(); i++) {
             StockChartMinute stockChartMinute = stockChartMinuteMapper.toEntity(stockResponses.get(i));
             if (i == 0) {
-                recentSavedStock = stockChartMinute;
+                recentSavedStock = stockChartMinuteRepository.findFirstByStockCodeEqualsAndDateEqualsAndTimeBefore(
+                        stockChartMinute.getStockCode(),
+                        stockChartMinute.getDate(),
+                        stockChartMinute.getTime()
+                );
+                if (Objects.isNull(recentSavedStock)) {
+                    recentSavedStock = stockChartMinute;
+                }
             }
 
             // 저장되있는 가장 최근 분봉이 지금 저장하려는것보다 나중 분봉인경우 빠져나온다.
             if (recentSavedStock.getTime().isAfter(stockChartMinute.getTime())) {
+                log.debug("already saved data");
                 break;
             }
-
             stockChartMinuteRepository.save(stockChartMinute);
+            log.debug("[StockChartMinute] saved : {}", stockChartMinute);
         }
     }
 }
