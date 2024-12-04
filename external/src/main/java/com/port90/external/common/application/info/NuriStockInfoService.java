@@ -20,14 +20,8 @@ public class NuriStockInfoService implements StockInfoService {
 
     @Override
     public void fetchAndSaveAllStockInfoData() {
-        List<NuriStockResponse> stockResponses = nuriClient.getStockInfo();
-        System.out.println(stockResponses);
+        List<NuriStockResponse> stockResponses = nuriClient.getSto();
         convertToDomainAndSaveAll(stockResponses);
-    }
-
-    @Override
-    public List<String> getAllStockCodes() {
-        return stockInfoRepository.findAllStockCodes();
     }
 
     @Transactional

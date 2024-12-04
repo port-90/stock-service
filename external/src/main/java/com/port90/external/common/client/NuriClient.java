@@ -27,7 +27,7 @@ public class NuriClient {
     @Value("${nuri.key}")
     private String SERVICE_KEY;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final ApiService apiService;
 
     public List<NuriStockResponse> getDailyStockData(String stockCode, int size) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -57,33 +57,18 @@ public class NuriClient {
         return getResponses(response);
     }
 
-    public List<NuriStockResponse> getStockInfo() {
-        LocalDateTime baseDate = LocalDate.now().minusWeeks(1).atStartOfDay();
+    public List<NuriStockResponse> getStockPriceInfo(String stockCode, LocalDate date) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        System.out.println(baseDate);
         URI uri = UriComponentsBuilder.fromUriString(BASE_URL)
                 .path("/getStockPriceInfo")
                 .queryParam("serviceKey", SERVICE_KEY)
                 .queryParam("numOfRows", 5000)
                 .queryParam("pageNo", 1)
                 .queryParam("resultType", "json")
-                .queryParam("basDt", baseDate.format(dateTimeFormatter))
+                .queryParam("basDt", date.format(dateTimeFormatter))
                 .build().toUri();
-        //todo: 공휴일 정보 가져와서 오늘 직전 공휴일 아닌 날의 데이터를 가져오게 해야한다.
 
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-        System.out.println(uri);
-        ResponseEntity<String> response = restTemplate.exchange(
-                uri,
-                HttpMethod.GET,
-                entity,
-                String.class
-        );
-
+        ResponseEntity<String> response = apiService.getForSimpleJson(uri);
         return getResponses(response);
     }
 
@@ -103,7 +88,6 @@ public class NuriClient {
                 JSONObject output = (JSONObject) o;
                 String jsonString = output.toJSONString();
                 NuriStockResponse stock = objectMapper.readValue(jsonString, NuriStockResponse.class);
-                System.out.println(stock);
                 stockResponses.add(stock);
             }
 

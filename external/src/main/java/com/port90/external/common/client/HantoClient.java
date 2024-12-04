@@ -30,7 +30,7 @@ import java.util.List;
 @Component
 public class HantoClient {
     private final HantoCredentialRepository hantoCredentialRepository;
-    private final HantoApiService hantoApiService;
+    private final ApiService apiService;
 
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
@@ -68,7 +68,7 @@ public class HantoClient {
         HttpHeaders headers = buildHeaders(hantoCredential, "CTCA0903R");
 
         // API 호출
-        ResponseEntity<String> response = hantoApiService.getForObject(url, headers, String.class);
+        ResponseEntity<String> response = apiService.getForObject(url, headers, String.class);
         log.info("[STOCK API - HOLIDAY] {}, {}", response.getStatusCode(), response.getBody());
 
         return getHolidayResponses(response);
@@ -94,7 +94,7 @@ public class HantoClient {
         HttpHeaders headers = buildHeaders(hantoCredential, "FHKST03010200");
 
         // API 호출
-        ResponseEntity<String> response = hantoApiService.getForObject(url, headers, String.class);
+        ResponseEntity<String> response = apiService.getForObject(url, headers, String.class);
         log.info("[STOCK API - MINUTE] {}", response.getStatusCode());
 
         return getDailyMintueResponses(stockCode, response);
@@ -102,7 +102,7 @@ public class HantoClient {
 
     private String getAccessToken(HantoCredential hantoCredential) {
         HantoLoginRequest loginRequest = new HantoLoginRequest(hantoCredential.getAppSecret(), hantoCredential.getAppKey());
-        HantoLoginResponse response = hantoApiService.postForObject(LOGIN_URL, loginRequest, HantoLoginResponse.class);
+        HantoLoginResponse response = apiService.postForObject(LOGIN_URL, loginRequest, HantoLoginResponse.class);
         log.info("[HANTO LOGIN] {}", response);
         return response.getAccessToken();
     }

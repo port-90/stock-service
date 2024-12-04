@@ -2,17 +2,17 @@ package com.port90.external.common.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.apache.coyote.Response;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class HantoApiService {
+public class ApiService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public <T> T postForObject(String url, Object request, Class<T> responseType) {
@@ -24,5 +24,14 @@ public class HantoApiService {
         log.info("[GET] Request to URL: {}", url);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
         return restTemplate.exchange(url, HttpMethod.GET, entity, responseType);
+    }
+
+    public ResponseEntity<String> getForSimpleJson(URI uri) {
+        log.info("[GET] Request to URL: {}", uri);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        return restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
     }
 }
