@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -22,6 +23,7 @@ public class StockChartTask {
     private final HantoClient hantoClient;
 
     @Async
+    @Transactional
     public void processStocks(HantoCredential credentials, List<String> stockCodes) {
         LocalTime baseTime = LocalTime.now();
         for (String stockCode : stockCodes) {
