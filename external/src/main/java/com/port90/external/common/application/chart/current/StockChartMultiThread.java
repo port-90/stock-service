@@ -25,7 +25,7 @@ public class StockChartMultiThread {
     public void run() {
         List<HantoCredential> credentials = hantoClient.getCredentials();
         String result = hantoClient.isHoliday(credentials.getFirst(), LocalDate.now());
-        if (result.equals("Y")) return;
+        if (result.equals("N")) return;
 
         List<String> stockCodes = stockInfoRepository.findAllStockCodes();
         List<List<String>> stockCodeGroups = groupStockCodes(stockCodes);
