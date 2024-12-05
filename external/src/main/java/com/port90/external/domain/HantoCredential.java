@@ -2,13 +2,11 @@ package com.port90.external.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
-@Setter
 @Getter
 @Entity
 public class HantoCredential {
@@ -27,4 +25,8 @@ public class HantoCredential {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    public void updateAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
 }

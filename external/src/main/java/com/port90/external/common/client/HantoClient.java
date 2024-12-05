@@ -2,69 +2,89 @@ package com.port90.external.common.client;
 
 import com.port90.external.common.dto.HantoLoginRequest;
 import com.port90.external.common.dto.HantoLoginResponse;
+import com.port90.external.common.dto.StockResponse;
 import com.port90.external.common.dto.VolumeRankResponse;
+import com.port90.external.domain.HantoCredential;
+import com.port90.external.repository.HantoCredentialRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
+@RequiredArgsConstructor
 @Component
 public class HantoClient {
-    @Value("${hanto.appkey}")
-    private String APP_KEY;
-    @Value("${hanto.appsecret}")
-    private String APP_SECRET;
+    private final HantoCredentialRepository hantoCredentialRepository;
+    private final ApiService apiService;
+    private final RestTemplate restTemplate = new RestTemplate();
+
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
+
     @Value("${hanto.loginUrl}")
     private String LOGIN_URL;
 
-    private String accessToken;
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    public void login() {
-        // cosntruct 에서 하려고 하면 안됨.
-        // 순서 : constructor 호출 -> porperty 파일 @value로 삽입 임.
-        this.accessToken = getAccessToken();
+    @Cacheable(value = "credential", key = "'all'")
+    public List<HantoCredential> getCredentials() {
+        return hantoCredentialRepository.findAll();
     }
 
-    private String getAccessToken() {
-        String url = UriComponentsBuilder.fromUriString(LOGIN_URL)
-                .toUriString();
-        log.info("[URL] {}", url);
+    @Transactional
+    public List<HantoCredential> loginAll() {
+        List<HantoCredential> hantoCredentials = hantoCredentialRepository.findAll();
+        for (HantoCredential hantoCredential : hantoCredentials) {
+            hantoCredential.updateAccessToken(getAccessToken(hantoCredential));
+        }
+        return hantoCredentials;
+    }
 
-        // 요청 바디 설정
-        HantoLoginRequest loginRequest = new HantoLoginRequest(APP_SECRET, APP_KEY);
+    // 국내 휴장일조회
+    @Cacheable(value = "holiday", key = "#baseDate")
+    public String isHoliday(HantoCredential hantoCredential, LocalDate baseDate) {
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String nowStr = baseDate.format(timeFormatter);
+        String url = UriComponentsBuilder.fromUriString(BASE_URL)
+                .path("/chk-holiday")
+                .queryParam("BASS_DT", nowStr)
+                .queryParam("CTX_AREA_NK", "")
+                .queryParam("CTX_AREA_FK", "")
+                .toUriString();
+
+        // 요청 헤더 구성
+        HttpHeaders headers = buildHeaders(hantoCredential, "CTCA0903R");
 
         // API 호출
-        HantoLoginResponse response = restTemplate.postForObject(
-                url,
-                loginRequest,
-                HantoLoginResponse.class
-        );
+        ResponseEntity<String> response = apiService.getForObject(url, headers, String.class);
+        log.info("[STOCK API - HOLIDAY] {}, {}", response.getStatusCode(), response.getBody());
 
-        System.out.println(response);
-        return response.getAccessToken();
+        return getHolidayResponses(response);
     }
 
     // 주식당일분봉조회
     // stockCode: 종목 단축코드
     // baseTime: 해당시간 이전 1분간 30분 데이터 반환
-    public ResponseEntity<String> getDailyMinute(String stockCode, LocalTime baseTime) {
-        if (this.accessToken == null) login();
+    public List<StockResponse> getDailyMinute(HantoCredential hantoCredential, String stockCode, LocalTime baseTime) {
 
-        LocalTime now = baseTime;
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HHmmss");
-        String nowStr = now.format(timeFormatter);
+        String nowStr = baseTime.format(timeFormatter);
         String url = UriComponentsBuilder.fromUriString(BASE_URL)
                 .path("/inquire-time-itemchartprice")
                 .queryParam("FID_ETC_CLS_CODE", ",")
@@ -73,33 +93,82 @@ public class HantoClient {
                 .queryParam("FID_INPUT_HOUR_1", nowStr)
                 .queryParam("FID_PW_DATA_INCU_YN", "N")
                 .toUriString();
-        log.info("[URL] {}", url);
 
         // 요청 헤더 구성
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json; charset=UTF-8");
-        headers.set("authorization", "Bearer " + accessToken);
-        headers.set("appkey", APP_KEY);
-        headers.set("appsecret", APP_SECRET);
-        headers.set("tr_id", "FHKST03010200"); // 국내 주식 시세 조회 TR ID
-        headers.set("custtype", "P");
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHKST03010200");
 
         // API 호출
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                String.class
-        );
+        ResponseEntity<String> response = apiService.getForObject(url, headers, String.class);
+        log.info("[STOCK API - MINUTE] {}", response.getStatusCode());
+
+        return getDailyMintueResponses(stockCode, response);
     }
 
+    private String getAccessToken(HantoCredential hantoCredential) {
+        HantoLoginRequest loginRequest = new HantoLoginRequest(hantoCredential.getAppSecret(), hantoCredential.getAppKey());
+        HantoLoginResponse response = apiService.postForObject(LOGIN_URL, loginRequest, HantoLoginResponse.class);
+        log.info("[HANTO LOGIN] {}", response);
+        return response.getAccessToken();
+    }
+
+    private HttpHeaders buildHeaders(HantoCredential hantoCredential, String transactionId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json; charset=UTF-8");
+        headers.set("authorization", "Bearer " + hantoCredential.getAccessToken());
+        headers.set("appkey", hantoCredential.getAppKey());
+        headers.set("appsecret", hantoCredential.getAppSecret());
+        headers.set("tr_id", transactionId);
+        headers.set("custtype", "P");
+        return headers;
+    }
+
+    private String getHolidayResponses(ResponseEntity<String> response) {
+        try {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
+            JSONArray list = (JSONArray) jsonObject.get("output");
+            JSONObject first = (JSONObject) list.getFirst();
+
+            String baseDateTime = (String) first.get("bass_dt");
+            String isOpen = (String) first.get("opnd_yn");
+            log.info("[CHK_HOLIDAY] {}: {}", baseDateTime, isOpen);
+            return isOpen;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private List<StockResponse> getDailyMintueResponses(String stockCode, ResponseEntity<String> response) {
+        List<StockResponse> stockResponses = new ArrayList<>();
+        try {
+            JSONParser jsonParser = new JSONParser();
+            JSONObject jsonObject = (JSONObject) jsonParser.parse(response.getBody());
+            JSONArray list = (JSONArray) jsonObject.get("output2");
+
+            for (Object o : list) {
+                JSONObject output = (JSONObject) o;
+                StockResponse stockResponse = new StockResponse();
+                stockResponse.setStockCode(stockCode);
+                stockResponse.setDate((String) output.get("stck_bsop_date"));
+                stockResponse.setTime((String) output.get("stck_cntg_hour"));
+                stockResponse.setPrice((String) output.get("stck_prpr")); // 현재가
+                stockResponse.setStartPrice((String) output.get("stck_oprc")); // 시가
+                stockResponse.setHighPrice((String) output.get("stck_hgpr")); // 고가
+                stockResponse.setLowPrice((String) output.get("stck_lwpr")); // 저가
+                stockResponse.setTradingVolume((String) output.get("cntg_vol"));  // 누적 거래량
+                stockResponse.setTradingValue((String) output.get("acml_tr_pbmn"));  // 누적 거래량
+
+                stockResponses.add(stockResponse);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return stockResponses;
+    }
 
     // 거래량 순위 API 호출
-    public VolumeRankResponse getVolumeRank() {
-        if (this.accessToken == null) {
-            login();
-        }
+    public VolumeRankResponse getVolumeRank(HantoCredential hantoCredential) {
 
         String url = UriComponentsBuilder.fromUriString(BASE_URL)
                 .path("/uapi/domestic-stock/v1/quotations/volume-rank")
@@ -119,9 +188,9 @@ public class HantoClient {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json; charset=UTF-8");
-        headers.set("authorization", "Bearer " + accessToken);
-        headers.set("appkey", APP_KEY);
-        headers.set("appsecret", APP_SECRET);
+        headers.set("authorization", "Bearer " +  hantoCredential.getAccessToken());
+        headers.set("appkey", hantoCredential.getAppKey());
+        headers.set("appsecret", hantoCredential.getAppSecret());
         headers.set("tr_id", "FHPST01710000"); // 거래량 순위 TR ID
         headers.set("custtype", "P");
 

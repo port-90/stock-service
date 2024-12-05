@@ -6,8 +6,10 @@ import jakarta.persistence.IdClass;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @ToString
@@ -31,4 +33,7 @@ public class StockChartMinute {
     private String lowPrice;
     private String tradingVolume; // 체결 거래량
     private String tradingValue; // 누적거래대금
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }
