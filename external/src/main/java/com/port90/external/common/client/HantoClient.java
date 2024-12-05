@@ -14,12 +14,10 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
@@ -34,7 +32,6 @@ import java.util.List;
 public class HantoClient {
     private final HantoCredentialRepository hantoCredentialRepository;
     private final ApiService apiService;
-    private final RestTemplate restTemplate = new RestTemplate();
 
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
@@ -168,10 +165,11 @@ public class HantoClient {
     }
 
     // 거래량 순위 API 호출
+    @Cacheable(value = "volumeRankCache", key = "'volume:rank'")
     public VolumeRankResponse getVolumeRank(HantoCredential hantoCredential) {
 
         String url = UriComponentsBuilder.fromUriString(BASE_URL)
-                .path("/uapi/domestic-stock/v1/quotations/volume-rank")
+                .path("/volume-rank")
                 .queryParam("FID_COND_MRKT_DIV_CODE", "J") // 코스피
                 .queryParam("FID_COND_SCR_DIV_CODE", "20171")
                 .queryParam("FID_INPUT_ISCD", "0000") // 전체 종목
@@ -184,25 +182,10 @@ public class HantoClient {
                 .queryParam("FID_VOL_CNT", "")
                 .queryParam("FID_INPUT_DATE_1", "")
                 .toUriString();
-        log.info("[URL] {}", url);
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json; charset=UTF-8");
-        headers.set("authorization", "Bearer " +  hantoCredential.getAccessToken());
-        headers.set("appkey", hantoCredential.getAppKey());
-        headers.set("appsecret", hantoCredential.getAppSecret());
-        headers.set("tr_id", "FHPST01710000"); // 거래량 순위 TR ID
-        headers.set("custtype", "P");
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01710000");
 
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        // API 호출 및 응답 처리
-        ResponseEntity<VolumeRankResponse> response = restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                VolumeRankResponse.class
-        );
+        ResponseEntity<VolumeRankResponse> response = apiService.getForObject(url, headers, VolumeRankResponse.class);
 
         log.info("API 호출 성공: {}", response.getBody());
         return response.getBody();

@@ -3,6 +3,7 @@ package com.port90.external.common.application.chart.current;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.dto.VolumeRank;
 import com.port90.external.common.dto.VolumeRankResponse;
+import com.port90.external.domain.HantoCredential;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -20,7 +21,8 @@ public class MainRankService {
 
     @Cacheable(value = "volumeRankCache", key = "'volume:rank'")
     public List<VolumeRank> fetchVolumeRank() {
-        VolumeRankResponse response = hantoClient.getVolumeRank();
+        HantoCredential hantoCredential = new HantoCredential();
+        VolumeRankResponse response = hantoClient.getVolumeRank(hantoCredential);
 
         if (response == null || response.getOutput() == null) {
             log.warn("API 호출 결과가 비어 있습니다.");
