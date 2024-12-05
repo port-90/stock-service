@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface HantoCredentialRepository extends JpaRepository<HantoCredential, Long> {
-
+    HantoCredential findByNameIs(String name);
 }

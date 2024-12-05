@@ -52,6 +52,13 @@ public class HantoClient {
         return hantoCredentials;
     }
 
+    @Transactional
+    public HantoCredential login(String name) {
+        HantoCredential hantoCredential = hantoCredentialRepository.findByNameIs(name);
+        hantoCredential.updateAccessToken(getAccessToken(hantoCredential));
+        return hantoCredential;
+    }
+
     // 국내 휴장일조회
     @Cacheable(value = "holiday", key = "#baseDate")
     public String isHoliday(HantoCredential hantoCredential, LocalDate baseDate) {
