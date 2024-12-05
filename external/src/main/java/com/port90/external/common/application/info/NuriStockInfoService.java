@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,15 +20,10 @@ public class NuriStockInfoService implements StockInfoService {
     private final NuriClient nuriClient;
 
     @Override
-    public void fetchAndSaveAllStockInfoData() {
-        List<NuriStockResponse> stockResponses = nuriClient.getStockInfo();
-        System.out.println(stockResponses);
+    public void fetchStockInfo() {
+        LocalDate today = LocalDate.now();
+        List<NuriStockResponse> stockResponses = nuriClient.getEnableStockPriceInfo(today.minusDays(1));
         convertToDomainAndSaveAll(stockResponses);
-    }
-
-    @Override
-    public List<String> getAllStockCodes() {
-        return stockInfoRepository.findAllStockCodes();
     }
 
     @Transactional

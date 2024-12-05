@@ -5,8 +5,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
@@ -24,4 +26,7 @@ public class StockChartDaily {
     private String lowPrice;
     private String totalVolume;
     private String totalPrice;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }

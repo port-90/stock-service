@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Repository
 public interface StockChartMinuteRepository extends JpaRepository<StockChartMinute, StockChartMinuteId> {
 
@@ -28,4 +31,5 @@ public interface StockChartMinuteRepository extends JpaRepository<StockChartMinu
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime
     );
+    StockChartMinute findFirstByStockCodeEqualsAndDateEqualsAndTimeBefore(String stockCode, LocalDate date, LocalTime time);
 }
