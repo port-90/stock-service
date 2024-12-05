@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.port90.core.comment.domain.exception.ErrorCode.COMMENT_NOT_FOUND;
+import static com.port90.core.comment.domain.exception.CommentErrorCode.COMMENT_NOT_FOUND;
 
 @Repository
 @RequiredArgsConstructor
@@ -36,10 +36,16 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Comment findById(Long commentId) {
-        return CommentMapper.toModel(
-                commentJpaRepository.findById(commentId)
-                        .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND))
-        );
+        return commentJpaRepository.findById(commentId)
+                .map(CommentMapper::toModel)
+                .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND));
+    }
+
+    @Override
+    public Comment findByIdWithOptimisticLock(Long commentId) {
+        return commentJpaRepository.findByIdWithOptimisticLock(commentId)
+                .map(CommentMapper::toModel)
+                .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND));
     }
 
     @Override
@@ -68,5 +74,10 @@ public class CommentRepositoryImpl implements CommentRepository {
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
+    }
+
+    @Override
+    public long countByParentId(Long parentId) {
+        return commentJpaRepository.countByParentId(parentId);
     }
 }
