@@ -1,4 +1,4 @@
-package com.port90.external.domain;
+package com.port90.stockdomain.domain.rank;
 
 import jakarta.persistence.*;
 import lombok.Getter;

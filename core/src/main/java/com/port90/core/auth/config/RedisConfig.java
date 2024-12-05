@@ -49,7 +49,7 @@ public class RedisConfig {
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer(objectMapper)))
-                .entryTtl(Duration.ofDays(1L))
+                .entryTtl(Duration.ofMinutes(15))
                 .disableCachingNullValues();
 
         return RedisCacheManager.builder(connectionFactory)

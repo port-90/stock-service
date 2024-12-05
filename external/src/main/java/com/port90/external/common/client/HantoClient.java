@@ -9,9 +9,8 @@ import com.port90.external.common.dto.HantoLoginResponse;
 import com.port90.external.common.dto.StockResponse;
 import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
-import com.port90.external.domain.VolumeRankData;
 import com.port90.external.repository.HantoCredentialRepository;
-import com.port90.external.repository.VolumeRankDataRepository;
+import com.port90.stockdomain.domain.rank.VolumeRankData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -37,7 +36,7 @@ import java.util.List;
 @Component
 public class HantoClient {
     private final HantoCredentialRepository hantoCredentialRepository;
-    private final VolumeRankDataRepository volumeRankDataRepository;
+    private final com.port90.stockdomain.infrastructure.VolumeRankDataRepository volumeRankDataRepository;
     private final ApiService apiService;
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
