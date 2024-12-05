@@ -1,4 +1,5 @@
-package com.port90.external.common.dto;
+package com.port90.core.auth.dto.response;
+
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -10,7 +11,7 @@ import java.util.List;
 @ToString
 @Getter
 @Setter
-public class VolumeRankResponse {
+public class RateRankResponse {
 
     @JsonProperty("rt_cd")
     private String rtCd;
@@ -22,5 +23,6 @@ public class VolumeRankResponse {
     private String msg1;
 
     @JsonProperty("output")
-    private List<VolumeRank> output; // 거래량 순위 리스트
+    private List<RateRank> output; // 상승률/하락률 순위 리스트
 }
+

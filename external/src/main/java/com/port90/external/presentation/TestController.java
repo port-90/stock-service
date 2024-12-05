@@ -5,7 +5,6 @@ import com.port90.external.common.application.chart.past.StockChartDailyService;
 import com.port90.external.common.application.info.StockInfoService;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.dto.StockResponse;
-import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
 import lombok.RequiredArgsConstructor;
@@ -56,16 +55,9 @@ public class TestController {
         stockInfoService.fetchStockInfo();
     }
 
-
     @GetMapping("/fetchNsave/chart/minute/{stockCode}")
     public List<StockResponse> getStockChartMinuteOne(@PathVariable String stockCode) {
         List<HantoCredential> hantoCredentials = credentialRepository.findAll();
         return hantoClient.getDailyMinute(hantoCredentials.getFirst(), stockCode, LocalTime.now());
-    }
-
-    @GetMapping("/volume-rank")
-    public VolumeRankResponse getVolumeRank() {
-        List<HantoCredential> hantoCredentials = credentialRepository.findAll();
-        return hantoClient.getVolumeRank(hantoCredentials.getFirst());
     }
 }

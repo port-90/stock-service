@@ -1,16 +1,10 @@
 package com.port90.external.common.client;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.port90.external.common.dto.HantoLoginRequest;
 import com.port90.external.common.dto.HantoLoginResponse;
 import com.port90.external.common.dto.StockResponse;
-import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
-import com.port90.stockdomain.domain.rank.VolumeRankData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -36,11 +30,7 @@ import java.util.List;
 @Component
 public class HantoClient {
     private final HantoCredentialRepository hantoCredentialRepository;
-    private final com.port90.stockdomain.infrastructure.VolumeRankDataRepository volumeRankDataRepository;
     private final ApiService apiService;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
@@ -171,48 +161,5 @@ public class HantoClient {
             e.printStackTrace();
         }
         return stockResponses;
-    }
-
-    // 거래량 순위 API 호출
-    public VolumeRankResponse getVolumeRank(HantoCredential hantoCredential) {
-
-        String url = UriComponentsBuilder.fromUriString(BASE_URL)
-                .path("/volume-rank")
-                .queryParam("FID_COND_MRKT_DIV_CODE", "J") // 코스피
-                .queryParam("FID_COND_SCR_DIV_CODE", "20171")
-                .queryParam("FID_INPUT_ISCD", "0000") // 전체 종목
-                .queryParam("FID_DIV_CLS_CODE", "0") // 전체
-                .queryParam("FID_BLNG_CLS_CODE", "0") // 평균 거래량
-                .queryParam("FID_TRGT_CLS_CODE", "111111111")
-                .queryParam("FID_TRGT_EXLS_CLS_CODE", "0000000000")
-                .queryParam("FID_INPUT_PRICE_1", "")
-                .queryParam("FID_INPUT_PRICE_2", "")
-                .queryParam("FID_VOL_CNT", "")
-                .queryParam("FID_INPUT_DATE_1", "")
-                .toUriString();
-
-        HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01710000");
-        ResponseEntity<VolumeRankResponse> response = apiService.getForObject(url, headers, VolumeRankResponse.class);
-        VolumeRankResponse volumeRankResponse = response.getBody();
-
-        saveVolumeRankResponseAsJson(volumeRankResponse);
-        log.info("API 호출 성공 및 데이터 저장 완료: {}", volumeRankResponse);
-
-        return volumeRankResponse;
-    }
-
-    private void saveVolumeRankResponseAsJson(VolumeRankResponse response) {
-        try {
-            String jsonData = objectMapper.writeValueAsString(response);
-
-            VolumeRankData volumeRankData = new VolumeRankData();
-            volumeRankData.setResponseData(jsonData);
-            volumeRankDataRepository.save(volumeRankData);
-
-            log.info("거래량 순위 데이터를 JSON으로 저장했습니다: {}", jsonData);
-        } catch (JsonProcessingException e) {
-            log.error("JSON 변환 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("거래량 순위 데이터를 JSON으로 저장하는 데 실패했습니다.");
-        }
     }
 }
