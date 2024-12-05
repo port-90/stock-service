@@ -44,18 +44,21 @@ public class StockChartTask {
                         stockChartMinute.getDate(),
                         stockChartMinute.getTime()
                 );
+                log.info("[RECENT] {}", recentSavedStock);
                 if (Objects.isNull(recentSavedStock)) {
                     recentSavedStock = stockChartMinute;
+                    stockChartMinuteRepository.save(stockChartMinute);
                 }
             }
 
             // 저장되있는 가장 최근 분봉이 지금 저장하려는것보다 나중 분봉인경우 빠져나온다.
-            if (recentSavedStock.getTime().isAfter(stockChartMinute.getTime())) {
-                log.debug("already saved data");
+            log.info("[COMPARE] recent: {}, current: {}", recentSavedStock, stockChartMinute);
+            if (!recentSavedStock.getTime().isBefore(stockChartMinute.getTime())) {
+                log.info("already saved data");
                 break;
             }
             stockChartMinuteRepository.save(stockChartMinute);
-            log.debug("[StockChartMinute] saved : {}", stockChartMinute);
+            log.info("[StockChartMinute] saved : {}", stockChartMinute);
         }
     }
 }

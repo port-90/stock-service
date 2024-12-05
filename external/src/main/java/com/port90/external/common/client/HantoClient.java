@@ -103,6 +103,7 @@ public class HantoClient {
     private String getAccessToken(HantoCredential hantoCredential) {
         HantoLoginRequest loginRequest = new HantoLoginRequest(hantoCredential.getAppSecret(), hantoCredential.getAppKey());
         HantoLoginResponse response = hantoApiService.postForObject(LOGIN_URL, loginRequest, HantoLoginResponse.class);
+        log.info("[HANTO LOGIN] {}", response);
         return response.getAccessToken();
     }
 
