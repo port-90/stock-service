@@ -47,7 +47,7 @@ public class HantoClient {
     public List<HantoCredential> loginAll() {
         List<HantoCredential> hantoCredentials = hantoCredentialRepository.findAll();
         for (HantoCredential hantoCredential : hantoCredentials) {
-            hantoCredential.setAccessToken(getAccessToken(hantoCredential));
+            hantoCredential.updateAccessToken(getAccessToken(hantoCredential));
         }
         return hantoCredentials;
     }
