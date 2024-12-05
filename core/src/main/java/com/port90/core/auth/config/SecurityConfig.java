@@ -65,7 +65,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler))
                 .authorizeHttpRequests(auth -> auth             // 경로별 인가 설정
-                        .requestMatchers("/", "/logout").permitAll()
+                        .requestMatchers("/", "/logout", "/main/rank").permitAll()
                         .anyRequest().authenticated())
                 .logout(logout -> logout
                         .logoutUrl("/logout")                           // 로그아웃 URL

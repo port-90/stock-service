@@ -1,5 +1,6 @@
 package com.port90.external.presentation;
 
+import com.port90.external.common.application.chart.current.MainRankService;
 import com.port90.external.common.client.HantoClient;
 import com.port90.external.common.application.chart.current.HantoChartMinuteService;
 import com.port90.external.common.application.info.NuriStockInfoService;
@@ -15,6 +16,8 @@ public class InitialDataController {
     private final HantoChartMinuteService hantoChartMinuteService;
     private final NuriStockInfoService nuriStockInfoService;
     private final HantoClient hantoClient;
+    private final MainRankService mainRankService;
+
     @GetMapping("/test")
     public void test() {
         hantoChartMinuteService.fetchAndSaveMinuteStockData("005930");
@@ -38,4 +41,7 @@ public class InitialDataController {
     public void test4() {
         hantoClient.login();
     }
+
+    @GetMapping("/test5")
+    public void test5() {mainRankService.fetchVolumeRank();}
 }
