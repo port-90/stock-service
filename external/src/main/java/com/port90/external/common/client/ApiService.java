@@ -2,7 +2,6 @@ package com.port90.external.common.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,12 +25,8 @@ public class ApiService {
         return restTemplate.exchange(url, HttpMethod.GET, entity, responseType);
     }
 
-    public ResponseEntity<String> getForSimpleJson(URI uri) {
+    public String getForSimpleJson(URI uri) {
         log.info("[GET] Request to URL: {}", uri);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-        return restTemplate.exchange(uri, HttpMethod.GET, entity, String.class);
+        return restTemplate.getForObject(uri, String.class);
     }
 }

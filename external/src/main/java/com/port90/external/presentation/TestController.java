@@ -52,7 +52,7 @@ public class TestController {
 
     @GetMapping("/stock-info")
     public void saveStockInfo() {
-        stockInfoService.fetchAndSaveAllStockInfoData();
+        stockInfoService.fetchStockInfo();
     }
 
 
