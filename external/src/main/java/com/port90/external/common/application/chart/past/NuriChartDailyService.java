@@ -23,7 +23,7 @@ public class NuriChartDailyService implements StockChartDailyService {
 
     @Override
     public void fetchAndSaveDailyStockData(String stockCode) {
-        List<NuriStockResponse> chartDailyResponses = nuriClient.getDailyStockData(stockCode, 30);
+        List<NuriStockResponse> chartDailyResponses = nuriClient.getDailyStockData(stockCode, 100);
         convertToDomainAndSaveAllChartMinuteData(chartDailyResponses);
     }
 

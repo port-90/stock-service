@@ -28,7 +28,7 @@ public class TestController {
     private final HantoCredentialRepository credentialRepository;
 
     @GetMapping("/fetchNsave/chart/daily")
-    public void test2() {
+    public void fetchDailyStock() {
         stockChartDailyService.fetchAndSaveDailyStockData("005930");
     }
 
