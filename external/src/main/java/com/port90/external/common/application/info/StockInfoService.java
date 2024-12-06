@@ -20,23 +20,24 @@ public class StockInfoService {
     private final StockInfoRepository stockInfoRepository;
     private final HantoClient hantoClient;
 
-    @Transactional
     public void updateStockInfoWithDetail() {
         List<StockInfo> stockInfoList = stockInfoRepository.findAll();
         int index = 0;
-        try {
-            for (StockInfo stockInfo : stockInfoList) {
-                HantoStockResponse hantoStockResponse = hantoClient.getStockInfo(stockInfo.getStockCode());
-                updateDetail(stockInfo, hantoStockResponse);
-                index++;
+        for (StockInfo stockInfo : stockInfoList) {
+            HantoStockResponse hantoStockResponse = hantoClient.getStockInfo(stockInfo.getStockCode());
+            updateDetail(stockInfo, hantoStockResponse);
+            index++;
+            try {
                 if (index % 15 == 0) Thread.sleep(1000);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
     }
 
-    private void updateDetail(StockInfo stockInfo, HantoStockResponse hantoStockResponse) {
+    @Transactional
+    public void updateDetail(StockInfo stockInfo, HantoStockResponse hantoStockResponse) {
         HantoStockResponse.Output output = hantoStockResponse.getOutput();
         LocalDate closeDate = null;
         String closeDateStr = output.getLstgAbolDt();
@@ -45,7 +46,8 @@ public class StockInfoService {
             closeDate = LocalDate.parse(closeDateStr, dateTimeFormatter);
         }
 
-        stockInfo.updateStockInfo(closeDate,makeStatus(output));
+        stockInfo.updateStockInfo(closeDate, makeStatus(output));
+        stockInfoRepository.save(stockInfo);
     }
 
     private StockInfoStatus makeStatus(HantoStockResponse.Output output) {
