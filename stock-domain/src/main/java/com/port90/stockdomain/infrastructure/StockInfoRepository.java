@@ -15,4 +15,6 @@ public interface StockInfoRepository extends JpaRepository<StockInfo, String> {
     List<String> findAllStockCodes();
 
     boolean existsByStockCode(String stockCode);
+
+    List<StockInfo> findByStatusNot(StockInfoStatus stockInfoStatus);
 }

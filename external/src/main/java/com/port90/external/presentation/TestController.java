@@ -29,9 +29,9 @@ public class TestController {
     private final StockChartMultiThread stockChartMultiThread;
     private final HantoCredentialRepository credentialRepository;
 
-    @GetMapping("/fetchNsave/chart/daily")
-    public void fetchDailyStock() {
-        stockChartDailyService.fetchAndSaveDailyStockData("005930");
+    @GetMapping("/fetchNsave/chart/daily/{date}")
+    public void fetchDailyStock(@PathVariable @DateTimeFormat(pattern = "yyyyMMdd") LocalDate date) {
+        stockChartDailyService.fetchAndSaveDailyStockData(date);
     }
 
     @GetMapping("/fetchNsave/chart/minute")
@@ -42,7 +42,7 @@ public class TestController {
     @GetMapping("/fetch/chart/minute/{stockCode}")
     public List<StockResponse> getStockChartMinuteOne(@PathVariable String stockCode) {
         List<HantoCredential> hantoCredentials = credentialRepository.findAll();
-        return hantoClient.getDailyMinute(hantoCredentials.getFirst(), stockCode, LocalTime.now());
+        return hantoClient.getMinuteChart(hantoCredentials.getFirst(), stockCode, LocalTime.now());
     }
 
     @GetMapping("/login/all")

@@ -1,9 +1,6 @@
 package com.port90.external.common.client;
 
-import com.port90.external.common.dto.HantoLoginRequest;
-import com.port90.external.common.dto.HantoLoginResponse;
-import com.port90.external.common.dto.HantoStockResponse;
-import com.port90.external.common.dto.StockResponse;
+import com.port90.external.common.dto.*;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
 import lombok.RequiredArgsConstructor;
@@ -85,7 +82,7 @@ public class HantoClient {
     // 주식당일분봉조회
     // stockCode: 종목 단축코드
     // baseTime: 해당시간 이전 1분간 30분 데이터 반환
-    public List<StockResponse> getDailyMinute(HantoCredential hantoCredential, String stockCode, LocalTime baseTime) {
+    public List<StockResponse> getMinuteChart(HantoCredential hantoCredential, String stockCode, LocalTime baseTime) {
 
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HHmmss");
         String nowStr = baseTime.format(timeFormatter);
@@ -106,6 +103,29 @@ public class HantoClient {
         log.info("[STOCK API - MINUTE] {}", response.getStatusCode());
 
         return getDailyMintueResponses(stockCode, response);
+    }
+
+    public HantoDailyChartResponse getDailyChart(String stockCode, LocalDate startDate, LocalDate endDate) {
+        HantoCredential hantoCredential = hantoCredentialRepository.findFirstByUpdatedAtBeforeOrderByUpdatedAtDesc(LocalDateTime.now());
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String url = UriComponentsBuilder.fromUriString(BASE_URL)
+                .path("/inquire-daily-itemchartprice")
+                .queryParam("FID_COND_MRKT_DIV_CODE", "J") // 주식, ETF, ETN
+                .queryParam("FID_INPUT_ISCD", stockCode)  // 종목 코드
+                .queryParam("FID_INPUT_DATE_1", startDate.format(dateTimeFormatter))
+                .queryParam("FID_INPUT_DATE_2", endDate.format(dateTimeFormatter))
+                .queryParam("FID_PERIOD_DIV_CODE", "D") // D: 최근 30거래일 / W:최근 30주 / M: 최근 30개월
+                .queryParam("FID_ORG_ADJ_PRC", "0") // 수정주가 반영
+                .toUriString();
+
+        // 요청 헤더 구성
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHKST03010100");
+
+        // API 호출
+        ResponseEntity<HantoDailyChartResponse> response = apiService.getForObject(url, headers, HantoDailyChartResponse.class);
+        log.info("[STOCK API - DAILY] {}", response.getStatusCode());
+
+        return response.getBody();
     }
 
     public HantoStockResponse getStockInfo(HantoCredential hantoCredential, String stockCode) {
