@@ -27,6 +27,7 @@ public class StockChartTask {
     @Transactional
     public void processStocks(HantoCredential credentials, List<String> stockCodes) {
         LocalTime baseTime = LocalTime.now();
+        log.info("[CREDENTIALS] {}", credentials.getName());
         for (String stockCode : stockCodes) {
             List<StockResponse> responses = hantoClient.getDailyMinute(credentials, stockCode, baseTime);
             log.info("[API CALLED] {}", responses.size());

@@ -4,6 +4,7 @@ import com.port90.external.common.application.chart.current.StockChartMultiThrea
 import com.port90.external.common.application.chart.past.StockChartDailyService;
 import com.port90.external.common.application.info.StockInfoService;
 import com.port90.external.common.client.HantoClient;
+import com.port90.external.common.dto.HantoStockResponse;
 import com.port90.external.common.dto.StockResponse;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
@@ -62,9 +63,15 @@ public class TestController {
         return hantoClient.isHoliday(hantoCredentials.getFirst(), date);
     }
 
-    @GetMapping("/stock-info")
+    @GetMapping("/fetchNsave/stock-info")
     public void saveStockInfo() {
-        stockInfoService.fetchStockInfo();
+        stockInfoService.updateStockInfoWithDetail();
+    }
+
+    @GetMapping("/stock-info/{stockCode}")
+    public HantoStockResponse getDetailStockInfo(@PathVariable String stockCode) {
+        List<HantoCredential> hantoCredentials = credentialRepository.findAll();
+        return hantoClient.getStockInfo(hantoCredentials.getFirst(), stockCode);
     }
 
 }
