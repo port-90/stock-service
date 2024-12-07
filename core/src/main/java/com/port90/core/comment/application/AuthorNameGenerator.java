@@ -6,12 +6,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class GuestIdGenerator {
+public class AuthorNameGenerator {
 
-    private static final String GUEST_ID_PREFIX = "Guest@";
+    private static final String AUTHOR_NAME_PREFIX = "익명@";
+
     private final RandomNumberGenerator randomNumberGenerator;
 
     public String generate() {
-        return GUEST_ID_PREFIX + randomNumberGenerator.generate();
+        return AUTHOR_NAME_PREFIX + randomNumberGenerator.generate();
     }
 }
