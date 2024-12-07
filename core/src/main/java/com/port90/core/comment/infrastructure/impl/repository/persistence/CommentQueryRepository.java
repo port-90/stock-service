@@ -16,7 +16,7 @@ public class CommentQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<CommentEntity> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<CommentEntity> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
                 .where(stockCodeEq(stockCode), parentIdIsNull(), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())

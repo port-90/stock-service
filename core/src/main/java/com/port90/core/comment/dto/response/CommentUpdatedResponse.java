@@ -7,8 +7,6 @@ import java.time.LocalDateTime;
 public record CommentUpdatedResponse(
         Long commentId,
         String stockCode,
-        Long userId,
-        String guestId,
         String content,
         LocalDateTime updatedAt
 ) {
@@ -16,8 +14,6 @@ public record CommentUpdatedResponse(
         return new CommentUpdatedResponse(
                 comment.getId(),
                 comment.getStockCode(),
-                comment.getUserId(),
-                comment.getGuestId(),
                 comment.getContent(),
                 comment.getUpdatedAt()
         );
