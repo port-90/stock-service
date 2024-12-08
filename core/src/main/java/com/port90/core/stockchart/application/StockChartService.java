@@ -1,5 +1,7 @@
 package com.port90.core.stockchart.application;
 
+import com.port90.core.stockchart.domain.exception.StockChartErrorCode;
+import com.port90.core.stockchart.domain.exception.StockChartTypeException;
 import com.port90.core.stockchart.dto.request.StockChartRequest;
 import com.port90.core.stockchart.dto.response.ChartData;
 import com.port90.core.stockchart.dto.response.StockChartResponse;
@@ -32,7 +34,7 @@ public class StockChartService {
             case HOURLY -> fetchHourlyData(request);
             case DAILY -> fetchDailyData(request);
             case WEEKLY -> fetchWeeklyData(request);
-            default -> throw new IllegalArgumentException();
+            default -> throw new StockChartTypeException(StockChartErrorCode.STOCK_CHART_TYPE_NOT_FOUND);
         };
     }
 
