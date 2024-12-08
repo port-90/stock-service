@@ -34,6 +34,12 @@ public class TestController {
         stockChartDailyService.fetchAndSaveDailyStockData(date);
     }
 
+    @GetMapping("/fetchNsave/chart/daily/{startDate}/{endDate}")
+    public void fetchDailyStock(@PathVariable @DateTimeFormat(pattern = "yyyyMMdd") LocalDate startDate,
+                                @PathVariable @DateTimeFormat(pattern = "yyyyMMdd") LocalDate endDate) {
+        stockChartDailyService.fetchAndSaveDailyStockData(startDate, endDate);
+    }
+
     @GetMapping("/fetchNsave/chart/minute")
     public void fetchMinuteStock() {
         stockChartMultiThread.run();
