@@ -1,6 +1,5 @@
 package com.port90.core.comment.infrastructure.impl.repository.persistence.entity;
 
-import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,24 +23,26 @@ public class CommentEntity {
     @Column(nullable = false)
     private String stockCode;
 
-    @Nullable
     private Long userId;
 
-    @Nullable
-    private String guestId;
-
-    @Nullable
     private String guestPassword;
 
     @Column(nullable = false)
     private String content;
 
-    @Nullable
     private Long parentId;
 
     private int likeCount;
 
-    private boolean hasChildren;
+    private boolean isParent;
+
+    private boolean isChild;
+
+    private boolean isUserComment;
+
+    private boolean isAnonymousUserComment;
+
+    private boolean isGuestComment;
 
     @CreatedDate
     @Column(updatable = false)

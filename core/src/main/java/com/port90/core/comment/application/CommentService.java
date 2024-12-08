@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,7 +32,7 @@ import static com.port90.core.comment.domain.exception.CommentErrorCode.*;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final GuestIdGenerator guestIdGenerator;
+    private final AuthorNameGenerator authorNameGenerator;
     private final PasswordEncoder passwordEncoder;
     private final StockInfoRepository stockInfoRepository;
     private final UserRepository userRepository;
@@ -41,11 +40,14 @@ public class CommentService {
     @Transactional
     public CommentCreateResponse create(Long userId, CommentCreateRequest request) {
 
-        validateCreateComment(userId, request);
+        validateGuestPasswordRequired(userId, request);
+        validateStockCode(request);
 
-        Comment comment = commentRepository.save(createComment(userId, request));
+        Comment comment = createComment(userId, request);
 
-        checkIfParentExists(request);
+        checkParentCommentAndUpdate(request, comment);
+
+        commentRepository.save(comment);
 
         log.info("Comment ID: {} Created", comment.getId());
 
@@ -56,10 +58,10 @@ public class CommentService {
     public CommentUpdatedResponse update(Long userId, Long commentId, CommentUpdateRequest request) {
         Comment comment = commentRepository.findById(commentId);
 
-        validateUserComment(userId, comment);
-        validateGuestComment(request.guestPassword(), comment);
+        validateComment(userId, request.guestPassword(), comment);
 
         comment.updateContent(request.content());
+
         commentRepository.save(comment);
 
         log.info("Comment ID: {} Updated", comment.getId());
@@ -71,20 +73,22 @@ public class CommentService {
     public void delete(Long userId, Long commentId, CommentDeleteRequest request) {
         Comment comment = commentRepository.findById(commentId);
 
-        validateUserComment(userId, comment);
-        validateGuestComment(request.guestPassword(), comment);
+        validateComment(userId, request.guestPassword(), comment);
 
-        updateParent(comment);
+        if (comment.isParent()) {
+            deleteChildComment(comment);
+        }
+        if (comment.isChild()) {
+            updateParentCommentIsNotParentAnymore(comment);
+        }
 
-        List<Long> commentIds = findAllChildCommentIds(comment.getId());
-        int deletedCount = commentRepository.deleteAllByIdIn(commentIds);
+        commentRepository.delete(comment);
 
-        log.info("Comment Deleted Count: {}", deletedCount);
         log.info("Comment ID: {} Deleted", comment.getId());
     }
 
-    public List<CommentDto> getParentCommentList(String stockCode, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findParentCommentsByStockCodeByCursor(stockCode, cursor, size);
+    public List<CommentDto> getCommentList(String stockCode, Long cursor, int size) {
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursor(stockCode, cursor, size);
 
         return getCommentDtos(comments);
     }
@@ -109,82 +113,8 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    private List<Long> findAllChildCommentIds(Long commentId) {
-        List<Long> commentIds = new ArrayList<>();
-        commentIds.add(commentId);
-
-        List<Long> childIds = commentRepository.findChildIdsByParentId(commentId);
-        for (Long childId : childIds) {
-            commentIds.addAll(findAllChildCommentIds(childId));
-        }
-
-        return commentIds;
-    }
-
-    private void validateCreateComment(Long userId, CommentCreateRequest request) {
-        if (userId == null && request.guestPassword() == null) {
-            throw new CommentException(GUEST_PASSWORD_REQUIRED);
-        }
-        if (request.parentId() != null && !commentRepository.existsByParentId(request.parentId())) {
-            throw new CommentException(PARENT_NOT_FOUND);
-        }
-        if (!stockInfoRepository.existsByStockCode(request.stockCode())) {
-            throw new CommentException(STOCK_CODE_NOT_FOUND);
-        }
-    }
-
-    private Comment createComment(Long userId, CommentCreateRequest request) {
-        return userId != null
-                ? Comment.createByUser(userId, request.stockCode(), request.content(), request.parentId())
-                : Comment.createByGuest(
-                request.stockCode(),
-                guestIdGenerator.generate(),
-                passwordEncoder.encode(request.guestPassword()),
-                request.content(),
-                request.parentId()
-        );
-    }
-
-    private void checkIfParentExists(CommentCreateRequest request) {
-        if (request.parentId() != null) {
-            Comment parent = commentRepository.findById(request.parentId());
-            parent.existChildren();
-            commentRepository.save(parent);
-        }
-    }
-
-    private void validateUserComment(Long userId, Comment comment) {
-        if (comment.isUserComment() && comment.isNotCreatedBy(userId)) {
-            throw new CommentException(COMMENT_USER_UNMATCHED);
-        }
-    }
-
-    private void validateGuestComment(String guestPassword, Comment comment) {
-        if (comment.isGuestComment()) {
-            if (guestPassword == null) {
-                throw new CommentException(GUEST_PASSWORD_REQUIRED);
-            }
-            if (guessPasswordUnmatched(guestPassword, comment)) {
-                throw new CommentException(GUEST_PASSWORD_UNMATCHED);
-            }
-        }
-    }
-
     private boolean guessPasswordUnmatched(String guestPassword, Comment comment) {
         return !passwordEncoder.matches(guestPassword, comment.getGuestPassword());
-    }
-
-    private void updateParent(Comment comment) {
-        if (comment.hasParent()) {
-            long count = commentRepository.countByParentId(comment.getParentId());
-            if (count > 1) {
-                return;
-            }
-
-            Comment parent = commentRepository.findById(comment.getParentId());
-            parent.nonExistChildren();
-            commentRepository.save(parent);
-        }
     }
 
     private Map<Long, String> getNameMap(List<Comment> comments) {
@@ -205,10 +135,88 @@ public class CommentService {
         return comments
                 .stream()
                 .map(comment -> {
-                    if (comment.isGuestComment()) {
-                        return CommentDto.fromGuest(comment);
+                    if (comment.isGuestComment() || comment.isAnonymousUserComment()) {
+                        return CommentDto.fromGuestOrAnonymousUser(comment, authorNameGenerator.generate());
                     }
                     return CommentDto.fromUser(comment, nameMap.get(comment.getUserId()));
                 }).toList();
+    }
+
+    private void validateStockCode(CommentCreateRequest request) {
+        if (!stockInfoRepository.existsByStockCode(request.stockCode())) {
+            throw new CommentException(STOCK_CODE_NOT_FOUND);
+        }
+    }
+
+    private static void validateGuestPasswordRequired(Long userId, CommentCreateRequest request) {
+        if (userId == null && request.guestPassword() == null) {
+            throw new CommentException(GUEST_PASSWORD_REQUIRED);
+        }
+    }
+
+    private static Comment createComment(Long userId, CommentCreateRequest request) {
+        if (requestedByUser(userId, request)) {
+            if (isAnonymousUserComment(request)) {
+                return Comment.createByAnonymousUser(userId, request.stockCode(), request.content(), request.parentId());
+            }
+
+            return Comment.createByUser(userId, request.stockCode(), request.content(), request.parentId());
+        }
+        if (requestedByGuest(userId, request)) {
+            return Comment.createByGuest(request.stockCode(), request.guestPassword(), request.content(), request.parentId());
+        }
+        throw new CommentException(INVALID_COMMENT);
+    }
+
+    private static boolean requestedByGuest(Long userId, CommentCreateRequest request) {
+        return userId == null && request.guestPassword() != null;
+    }
+
+    private static boolean isAnonymousUserComment(CommentCreateRequest request) {
+        return request.isAnonymousComment();
+    }
+
+    private static boolean requestedByUser(Long userId, CommentCreateRequest request) {
+        return userId != null && request.guestPassword() == null;
+    }
+
+    private void checkParentCommentAndUpdate(CommentCreateRequest request, Comment comment) {
+        if (request.parentId() != null) {
+            Comment parent = commentRepository.findById(request.parentId());
+            if (parent.isChild()) {
+                throw new CommentException(PARENT_COMMENT_IS_CHILD_COMMENT);
+            }
+            parent.hasChild();
+            comment.hasParent();
+            commentRepository.save(parent);
+        }
+    }
+
+    private void validateComment(Long userId, String guestPassword, Comment comment) {
+        if (comment.isUserComment() || comment.isAnonymousUserComment()) {
+            if (comment.isNotWrittenBy(userId)) {
+                throw new CommentException(COMMENT_USER_UNMATCHED);
+            }
+        }
+        if (comment.isGuestComment()) {
+            if (guestPassword == null) {
+                throw new CommentException(GUEST_PASSWORD_REQUIRED);
+            }
+            if (guessPasswordUnmatched(guestPassword, comment)) {
+                throw new CommentException(GUEST_PASSWORD_UNMATCHED);
+            }
+        }
+    }
+
+    private void deleteChildComment(Comment comment) {
+        List<Long> childIds = commentRepository.findChildIdsByParentId(comment.getId());
+        int count = commentRepository.deleteAllByIdIn(childIds);
+        log.info("{}번 댓글에 포함된 자식 댓글 {}개 삭제", comment.getId(), count);
+    }
+
+    private void updateParentCommentIsNotParentAnymore(Comment comment) {
+        Comment parent = commentRepository.findById(comment.getParentId());
+        parent.isNotParent();
+        commentRepository.save(parent);
     }
 }

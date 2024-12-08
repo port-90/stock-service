@@ -30,11 +30,6 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public boolean existsByParentId(Long parentId) {
-        return commentJpaRepository.existsById(parentId);
-    }
-
-    @Override
     public Comment findById(Long commentId) {
         return commentJpaRepository.findById(commentId)
                 .map(CommentMapper::toModel)
@@ -49,8 +44,8 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Long> findChildIdsByParentId(Long commentId) {
-        return commentJpaRepository.findChildIdsByParentId(commentId);
+    public List<Long> findChildIdsByParentId(Long parentId) {
+        return commentJpaRepository.findChildIdsByParentId(parentId);
     }
 
     @Override
@@ -59,9 +54,9 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findParentCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<Comment> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return commentQueryRepository
-                .findParentCommentsByStockCodeByCursor(stockCode, cursor, size)
+                .findCommentsByStockCodeByCursor(stockCode, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
@@ -77,7 +72,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public long countByParentId(Long parentId) {
-        return commentJpaRepository.countByParentId(parentId);
+    public void delete(Comment comment) {
+        commentJpaRepository.delete(CommentMapper.toEntity(comment));
     }
 }

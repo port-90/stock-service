@@ -7,21 +7,21 @@ import java.time.LocalDateTime;
 public record CommentDto(
         Long commentId,
         String stockCode,
-        String username,
+        String author,
         String content,
         int likeCount,
-        boolean hasChildren,
+        boolean isParent,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static CommentDto fromGuest(Comment comment) {
+    public static CommentDto fromGuestOrAnonymousUser(Comment comment, String guestName) {
         return new CommentDto(
                 comment.getId(),
                 comment.getStockCode(),
-                comment.getGuestId(),
+                guestName,
                 comment.getContent(),
                 comment.getLikeCount(),
-                comment.isHasChildren(),
+                comment.isParent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );
@@ -34,7 +34,7 @@ public record CommentDto(
                 username,
                 comment.getContent(),
                 comment.getLikeCount(),
-                comment.isHasChildren(),
+                comment.isParent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );

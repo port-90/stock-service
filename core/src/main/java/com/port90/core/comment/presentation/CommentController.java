@@ -55,18 +55,18 @@ public class CommentController {
                 .body("delete success");
     }
 
-    @GetMapping("/parent")
-    public List<CommentDto> getParentCommentList(
+    @GetMapping
+    public List<CommentDto> getCommentList(
             @RequestParam String stockCode,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentCommentList(stockCode, cursor, size);
+        return commentService.getCommentList(stockCode, cursor, size);
     }
 
-    @GetMapping("/child")
+    @GetMapping("/{parentId}")
     public List<CommentDto> getChildCommentList(
-            @RequestParam Long parentId,
+            @PathVariable Long parentId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "5") int size
     ) {
