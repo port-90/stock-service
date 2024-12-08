@@ -28,7 +28,7 @@ public class StockScheduler {
         hantoClient.isHoliday(hantoCredentials.getFirst(), LocalDate.now().minusDays(1));
     }
 
-    @Scheduled(cron = "0 0 5 * * * ")
+    @Scheduled(cron = "0 0 7 * * * ")
     public void syncStockInfo() {
         stockInfoService.updateStockInfoWithDetail();
     }

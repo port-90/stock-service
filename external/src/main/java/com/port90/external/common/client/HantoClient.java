@@ -105,8 +105,7 @@ public class HantoClient {
         return getDailyMintueResponses(stockCode, response);
     }
 
-    public HantoDailyChartResponse getDailyChart(String stockCode, LocalDate startDate, LocalDate endDate) {
-        HantoCredential hantoCredential = hantoCredentialRepository.findFirstByUpdatedAtBeforeOrderByUpdatedAtDesc(LocalDateTime.now());
+    public HantoDailyChartResponse getDailyChart(HantoCredential hantoCredential, String stockCode, LocalDate startDate, LocalDate endDate) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         String url = UriComponentsBuilder.fromUriString(BASE_URL)
                 .path("/inquire-daily-itemchartprice")
