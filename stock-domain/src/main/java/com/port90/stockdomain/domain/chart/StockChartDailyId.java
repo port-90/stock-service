@@ -15,4 +15,9 @@ import java.time.LocalDate;
 public class StockChartDailyId implements Serializable {
     private LocalDate date;
     private String stockCode;
+
+    public StockChartDailyId(StockChartDaily stockChartDaily) {
+        this.date = stockChartDaily.getDate();
+        this.stockCode = stockChartDaily.getStockCode();
+    }
 }

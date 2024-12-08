@@ -7,7 +7,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-//@EnableScheduling
+@EnableScheduling
 @ComponentScan(basePackages = "com.port90")
 @EnableJpaRepositories(basePackages = "com.port90")
 @EntityScan(basePackages = "com.port90")

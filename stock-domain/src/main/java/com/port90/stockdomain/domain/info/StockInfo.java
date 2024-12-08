@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,21 +17,23 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @NoArgsConstructor
+@EqualsAndHashCode(of = "stockCode")
 @Entity
 public class StockInfo {
     @Id
     private String stockCode;
     private String stockName;
-    private Long stockCount;
-    private Long marketCap;
-    private String market;
-    private String stockKind;
-
-    private LocalDate openDate;
-    private LocalDate closeDate;
+    private long stockCount; // 상장주식수
+    private long marketCap; // 시가총액
+    private String market; // 코스피, 코스닥
+    private String stockKind; // 그룹코드
+    private String stopStatus; // 거래정지여부
+    private String lockStatus; // 락 구분
 
     @Enumerated(EnumType.STRING)
-    private StockStatus stockStatus;
+    private StockInfoStatus status;
+    private LocalDate openDate;
+    private LocalDate closeDate;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -38,18 +41,8 @@ public class StockInfo {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public StockInfo(String stockCode, String stockName, Long stockCount, Long marketCap) {
-        this.stockCode = stockCode;
-        this.stockName = stockName;
-        this.stockCount = stockCount;
-        this.marketCap = marketCap;
-    }
-
-    public void updateDetail(String market, String stockKind, StockStatus stockStatus, LocalDate openDate, LocalDate closeDate) {
-        this.market = market;
-        this.stockKind = stockKind;
-        this.stockStatus = stockStatus;
-        this.openDate = openDate;
+    public void updateStockInfo(LocalDate closeDate, StockInfoStatus status) {
         this.closeDate = closeDate;
+        this.status = status;
     }
 }
