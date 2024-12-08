@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface StockChartMinuteRepository extends JpaRepository<StockChartMinute, StockChartMinuteId> {
 
-    // TODO: 분봉 데이터 정확한 계산 방법 확인 필요
     @Query("""
             SELECT m FROM StockChartMinute m
             WHERE m.stockCode = :stockCode
