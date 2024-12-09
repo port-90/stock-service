@@ -5,13 +5,15 @@ import com.port90.core.auth.infrastructure.UserRepository;
 import com.port90.core.comment.aop.Retry;
 import com.port90.core.comment.domain.exception.CommentException;
 import com.port90.core.comment.domain.model.Comment;
+import com.port90.core.comment.domain.model.GuestComment;
+import com.port90.core.comment.domain.model.UserComment;
 import com.port90.core.comment.dto.CommentDto;
-import com.port90.core.comment.dto.request.CommentCreateRequest;
-import com.port90.core.comment.dto.request.CommentDeleteRequest;
-import com.port90.core.comment.dto.request.CommentUpdateRequest;
-import com.port90.core.comment.dto.response.CommentCreateResponse;
-import com.port90.core.comment.dto.response.CommentUpdatedResponse;
+import com.port90.core.comment.dto.request.*;
+import com.port90.core.comment.dto.response.CommentUpdateResponse;
+import com.port90.core.comment.dto.response.GuestCommentCreateResponse;
+import com.port90.core.comment.dto.response.UserCommentCreateResponse;
 import com.port90.core.comment.infrastructure.CommentRepository;
+import com.port90.stockdomain.domain.chart.*;
 import com.port90.stockdomain.infrastructure.StockInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,9 +21,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.port90.core.comment.domain.exception.CommentErrorCode.*;
@@ -36,59 +40,183 @@ public class CommentService {
     private final PasswordEncoder passwordEncoder;
     private final StockInfoRepository stockInfoRepository;
     private final UserRepository userRepository;
+    private final StockChartProvider stockChartProvider;
 
     @Transactional
-    public CommentCreateResponse create(Long userId, CommentCreateRequest request) {
+    public UserCommentCreateResponse createUserComment(Long userId, UserCommentCreateRequest request) {
 
-        validateGuestPasswordRequired(userId, request);
-        validateStockCode(request);
+        validateStockCode(request.stockCode());
 
-        Comment comment = createComment(userId, request);
+        UserComment userComment = create(userId, request);
 
-        checkParentCommentAndUpdate(request, comment);
+        validateParentId(request.parentId(), userComment);
 
-        commentRepository.save(comment);
+        Comment comment = commentRepository.save(userComment);
 
-        log.info("Comment ID: {} Created", comment.getId());
+        log.info("User Comment Created, ID: {}", comment.getId());
 
-        return CommentCreateResponse.from(comment);
+        return UserCommentCreateResponse.from(comment);
     }
 
     @Transactional
-    public CommentUpdatedResponse update(Long userId, Long commentId, CommentUpdateRequest request) {
-        Comment comment = commentRepository.findById(commentId);
+    public GuestCommentCreateResponse createGuestComment(GuestCommentCreateRequest request) {
 
-        validateComment(userId, request.guestPassword(), comment);
+        validateStockCode(request.stockCode());
 
-        comment.updateContent(request.content());
+        GuestComment guestComment = create(request);
 
-        commentRepository.save(comment);
+        validateParentId(request.parentId(), guestComment);
 
-        log.info("Comment ID: {} Updated", comment.getId());
+        Comment comment = commentRepository.save(guestComment);
 
-        return CommentUpdatedResponse.from(comment);
+        log.info("Guest Comment Created, ID: {}", comment.getId());
+
+        return GuestCommentCreateResponse.from(comment);
     }
 
     @Transactional
-    public void delete(Long userId, Long commentId, CommentDeleteRequest request) {
+    public CommentUpdateResponse updateUserComment(Long userId, Long commentId, UserCommentUpdateRequest request) {
         Comment comment = commentRepository.findById(commentId);
 
-        validateComment(userId, request.guestPassword(), comment);
-
-        if (comment.isParent()) {
-            deleteChildComment(comment);
-        }
-        if (comment.isChild()) {
-            updateParentCommentIsNotParentAnymore(comment);
+        UserComment userComment = (UserComment) comment;
+        if (userComment.isNotWrittenBy(userId)) {
+            throw new CommentException(COMMENT_USER_UNMATCHED);
         }
 
-        commentRepository.delete(comment);
+        userComment.updateContent(request.content());
 
-        log.info("Comment ID: {} Deleted", comment.getId());
+        commentRepository.save(userComment);
+
+        log.info("User Comment Updated, ID: {}", userComment.getId());
+
+        return CommentUpdateResponse.from(userComment);
+    }
+
+    @Transactional
+    public CommentUpdateResponse updateGuestComment(Long commentId, GuestCommentUpdateRequest request) {
+        Comment comment = commentRepository.findById(commentId);
+
+        GuestComment guestComment = (GuestComment) comment;
+        if (passwordUnmatched(request.password(), guestComment)) {
+            throw new CommentException(GUEST_PASSWORD_UNMATCHED);
+        }
+
+        guestComment.updateContent(request.content());
+
+        commentRepository.save(guestComment);
+
+        log.info("Guest Comment Updated, ID: {}", guestComment.getId());
+
+        return CommentUpdateResponse.from(guestComment);
+    }
+
+    @Transactional
+    public void deleteUserComment(Long userId, Long commentId) {
+        Comment comment = commentRepository.findById(commentId);
+
+        UserComment userComment = (UserComment) comment;
+        if (userComment.isNotWrittenBy(userId)) {
+            throw new CommentException(COMMENT_USER_UNMATCHED);
+        }
+
+        if (userComment.isParent()) {
+            deleteChildComment(userComment);
+        }
+        if (userComment.isChild()) {
+            updateParentComment(userComment);
+        }
+
+        commentRepository.delete(userComment);
+
+        log.info("User Comment Deleted, ID: {}", userComment.getId());
+    }
+
+    @Transactional
+    public void deleteGuestComment(Long commentId, GuestCommentDeleteRequest request) {
+        Comment comment = commentRepository.findById(commentId);
+
+        GuestComment guestComment = (GuestComment) comment;
+        if (passwordUnmatched(request.password(), guestComment)) {
+            throw new CommentException(GUEST_PASSWORD_UNMATCHED);
+        }
+
+        if (guestComment.isParent()) {
+            deleteChildComment(guestComment);
+        }
+        if (guestComment.isChild()) {
+            updateParentComment(guestComment);
+        }
+
+        commentRepository.delete(guestComment);
+
+        log.info("Guest Comment Deleted, ID: {}", guestComment.getId());
     }
 
     public List<CommentDto> getCommentList(String stockCode, Long cursor, int size) {
         List<Comment> comments = commentRepository.findCommentsByStockCodeByCursor(stockCode, cursor, size);
+
+        return getCommentDtos(comments);
+    }
+
+    public List<CommentDto> getCommentListByMinute(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+        StockChartMinute chart = stockChartProvider.findStockChartMinuteCreatedAtBy(stockCode, date, time);
+
+        LocalDate chartDate = chart.getDate();
+        LocalTime chartTime = chart.getTime();
+        LocalDateTime start = LocalDateTime.of(chartDate, chartTime);
+        LocalDateTime end = start.plusMinutes(1L);
+
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end);
+
+        return getCommentDtos(comments);
+    }
+
+    public List<CommentDto> getCommentListByHour(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+        StockChartHourly chart = stockChartProvider.findStockChartHourlyCreatedAtBy(stockCode, date, time);
+
+        LocalDate chartDate = chart.getDate();
+        LocalTime chartTime = chart.getTime();
+        LocalDateTime start = LocalDateTime.of(chartDate, chartTime);
+        LocalDateTime end = start.plusHours(1L);
+
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end);
+
+        return getCommentDtos(comments);
+    }
+
+    public List<CommentDto> getCommentListByDaily(String stockCode, LocalDate date, Long cursor, int size) {
+        StockChartDaily chart = stockChartProvider.findStockChartDailyCreatedAtBy(stockCode, date);
+
+        LocalDate chartDate = chart.getDate();
+        LocalDateTime start = chartDate.atStartOfDay();
+        LocalDateTime end = start.plusDays(1L);
+
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end);
+
+        return getCommentDtos(comments);
+    }
+
+    public List<CommentDto> getCommentListByWeek(String stockCode, LocalDate date, Long cursor, int size) {
+        StockChartWeekly chart = stockChartProvider.findStockChartWeeklyCreatedAtBy(stockCode, date);
+
+        LocalDate chartDate = chart.getDate();
+        LocalDateTime start = chartDate.atStartOfDay();
+        LocalDateTime end = start.plusWeeks(1L);
+
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end);
+
+        return getCommentDtos(comments);
+    }
+
+    public List<CommentDto> getCommentListByMonth(String stockCode, Integer year, Integer month, Long cursor, int size) {
+        StockChartMonthly chart = stockChartProvider.findStockChartMonthlyCreatedAtBy(stockCode, year, month);
+
+        Integer chartYear = chart.getYear();
+        Integer chartMonth = chart.getMonth();
+        LocalDateTime start = LocalDateTime.of(chartYear, chartMonth, 1, 0, 0);
+        LocalDateTime end = start.plusMonths(1L);
+
+        List<Comment> comments = commentRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end);
 
         return getCommentDtos(comments);
     }
@@ -113,76 +241,44 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    private boolean guessPasswordUnmatched(String guestPassword, Comment comment) {
-        return !passwordEncoder.matches(guestPassword, comment.getGuestPassword());
-    }
-
-    private Map<Long, String> getNameMap(List<Comment> comments) {
-        List<Long> userIds = comments
-                .stream()
-                .map(Comment::getUserId)
-                .filter(Objects::nonNull)
-                .toList();
-        return userRepository.findAllByIdIn(userIds)
-                .stream()
-                .collect(Collectors.toMap(User::getId, User::getName));
-    }
-
-
-    private List<CommentDto> getCommentDtos(List<Comment> comments) {
-        Map<Long, String> nameMap = getNameMap(comments);
-
-        return comments
-                .stream()
-                .map(comment -> {
-                    if (comment.isGuestComment() || comment.isAnonymousUserComment()) {
-                        return CommentDto.fromGuestOrAnonymousUser(comment, authorNameGenerator.generate());
-                    }
-                    return CommentDto.fromUser(comment, nameMap.get(comment.getUserId()));
-                }).toList();
-    }
-
-    private void validateStockCode(CommentCreateRequest request) {
-        if (!stockInfoRepository.existsByStockCode(request.stockCode())) {
+    private void validateStockCode(String stockCode) {
+        if (!stockInfoRepository.existsByStockCode(stockCode)) {
             throw new CommentException(STOCK_CODE_NOT_FOUND);
         }
     }
 
-    private static void validateGuestPasswordRequired(Long userId, CommentCreateRequest request) {
-        if (userId == null && request.guestPassword() == null) {
-            throw new CommentException(GUEST_PASSWORD_REQUIRED);
+    private UserComment create(Long userId, UserCommentCreateRequest request) {
+        if (request.isAnonymous()) {
+            return createAnonymousUserComment(userId, request);
         }
+        return createIdentifiedUserComment(userId, request);
     }
 
-    private static Comment createComment(Long userId, CommentCreateRequest request) {
-        if (requestedByUser(userId, request)) {
-            if (isAnonymousUserComment(request)) {
-                return Comment.createByAnonymousUser(userId, request.stockCode(), request.content(), request.parentId());
-            }
-
-            return Comment.createByUser(userId, request.stockCode(), request.content(), request.parentId());
-        }
-        if (requestedByGuest(userId, request)) {
-            return Comment.createByGuest(request.stockCode(), request.guestPassword(), request.content(), request.parentId());
-        }
-        throw new CommentException(INVALID_COMMENT);
+    private UserComment createAnonymousUserComment(Long userId, UserCommentCreateRequest request) {
+        return UserComment.create(
+                request.stockCode(),
+                request.content(),
+                authorNameGenerator.generate(),
+                request.parentId(),
+                userId,
+                true
+        );
     }
 
-    private static boolean requestedByGuest(Long userId, CommentCreateRequest request) {
-        return userId == null && request.guestPassword() != null;
+    private static UserComment createIdentifiedUserComment(Long userId, UserCommentCreateRequest request) {
+        return UserComment.create(
+                request.stockCode(),
+                request.content(),
+                null,
+                request.parentId(),
+                userId,
+                false
+        );
     }
 
-    private static boolean isAnonymousUserComment(CommentCreateRequest request) {
-        return request.isAnonymousComment();
-    }
-
-    private static boolean requestedByUser(Long userId, CommentCreateRequest request) {
-        return userId != null && request.guestPassword() == null;
-    }
-
-    private void checkParentCommentAndUpdate(CommentCreateRequest request, Comment comment) {
-        if (request.parentId() != null) {
-            Comment parent = commentRepository.findById(request.parentId());
+    private void validateParentId(Long parentId, Comment comment) {
+        if (parentId != null) {
+            Comment parent = commentRepository.findById(parentId);
             if (parent.isChild()) {
                 throw new CommentException(PARENT_COMMENT_IS_CHILD_COMMENT);
             }
@@ -192,20 +288,48 @@ public class CommentService {
         }
     }
 
-    private void validateComment(Long userId, String guestPassword, Comment comment) {
-        if (comment.isUserComment() || comment.isAnonymousUserComment()) {
-            if (comment.isNotWrittenBy(userId)) {
-                throw new CommentException(COMMENT_USER_UNMATCHED);
-            }
-        }
-        if (comment.isGuestComment()) {
-            if (guestPassword == null) {
-                throw new CommentException(GUEST_PASSWORD_REQUIRED);
-            }
-            if (guessPasswordUnmatched(guestPassword, comment)) {
-                throw new CommentException(GUEST_PASSWORD_UNMATCHED);
-            }
-        }
+    private GuestComment create(GuestCommentCreateRequest request) {
+        return GuestComment.create(
+                request.stockCode(),
+                request.content(),
+                request.parentId(),
+                authorNameGenerator.generate(),
+                passwordEncoder.encode(request.password())
+        );
+    }
+
+    private boolean passwordUnmatched(String password, GuestComment guestComment) {
+        return !passwordEncoder.matches(password, guestComment.getPassword());
+    }
+
+    private Map<Long, String> getNameMap(List<Comment> comments) {
+        List<Long> userIds = comments
+                .stream()
+                .filter(comment -> comment instanceof UserComment)
+                .filter(comment -> (!((UserComment) comment).isAnonymous()))
+                .map(comment -> ((UserComment) comment).getUserId())
+                .toList();
+        return userRepository.findAllByIdIn(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getId, User::getName));
+    }
+
+    private List<CommentDto> getCommentDtos(List<Comment> comments) {
+        Map<Long, String> nameMap = getNameMap(comments);
+
+        return comments
+                .stream()
+                .map(comment -> {
+                    if (comment instanceof UserComment userComment) {
+                        if (userComment.isAnonymous()) {
+                            return CommentDto.from(userComment);
+                        }
+                        return CommentDto.from(userComment, nameMap.get(userComment.getUserId()));
+                    }
+
+                    GuestComment guestComment = (GuestComment) comment;
+                    return CommentDto.from(guestComment);
+                }).toList();
     }
 
     private void deleteChildComment(Comment comment) {
@@ -214,7 +338,12 @@ public class CommentService {
         log.info("{}번 댓글에 포함된 자식 댓글 {}개 삭제", comment.getId(), count);
     }
 
-    private void updateParentCommentIsNotParentAnymore(Comment comment) {
+    private void updateParentComment(Comment comment) {
+        int count = commentRepository.countByParentId(comment.getParentId());
+        log.info("{}번 댓글에 포함된 자식 댓글 {}개", comment.getParentId(), count);
+        if (count > 1) {
+            return;
+        }
         Comment parent = commentRepository.findById(comment.getParentId());
         parent.isNotParent();
         commentRepository.save(parent);

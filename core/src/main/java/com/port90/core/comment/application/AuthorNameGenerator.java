@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuthorNameGenerator {
 
-    private static final String AUTHOR_NAME_PREFIX = "익명@";
+    private static final String AUTHOR_NAME_PREFIX = "익명";
 
     private final RandomNumberGenerator randomNumberGenerator;
 

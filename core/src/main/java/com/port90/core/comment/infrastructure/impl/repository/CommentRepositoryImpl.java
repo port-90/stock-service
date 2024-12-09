@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.port90.core.comment.domain.exception.CommentErrorCode.COMMENT_NOT_FOUND;
@@ -80,7 +81,20 @@ public class CommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable) {
-        return commentJpaRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+        return commentQueryRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(CommentMapper::toModel);
+    }
+
+    @Override
+    public List<Comment> findCommentsByStockCodeByCursorBetween(String stockCode, Long cursor, int size, LocalDateTime start, LocalDateTime end) {
+        return commentQueryRepository.findCommentsByStockCodeByCursorBetween(stockCode, cursor, size, start, end)
+                .stream()
+                .map(CommentMapper::toModel)
+                .toList();
+    }
+
+    @Override
+    public int countByParentId(Long parentId) {
+        return commentJpaRepository.countByParentId(parentId);
     }
 }
