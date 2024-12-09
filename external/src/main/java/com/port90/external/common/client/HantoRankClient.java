@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.port90.external.common.dto.MarketCapResponse;
 import com.port90.external.common.dto.RateRankResponse;
 import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
@@ -130,6 +131,39 @@ public class HantoRankClient {
             log.error("JSON 변환 중 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("JSON 데이터를 저장하는 데 실패했습니다.", e);
         }
+    }
+
+    public MarketCapResponse fetchMarketCapRanking(HantoCredential hantoCredential) {
+        String url = buildMarketCapUrl();
+
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01740000");
+
+        try {
+            ResponseEntity<MarketCapResponse> response = apiService.getForObject(url, headers, MarketCapResponse.class);
+            MarketCapResponse marketCapResponse = response.getBody();
+
+            saveRankResponseAsJson(marketCapResponse, RankData.RankType.MARKET_CAP);
+            log.info("시가총액 상위 데이터 저장 성공: {}", marketCapResponse);
+            return marketCapResponse;
+        } catch (Exception e) {
+            log.error("시가총액 데이터 저장 실패: {}", e.getMessage());
+            throw new RuntimeException("시가총액 데이터를 저장하는 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    private String buildMarketCapUrl() {
+        return UriComponentsBuilder.fromUriString("https://openapi.koreainvestment.com:9443")
+                .path("/uapi/domestic-stock/v1/ranking/market-cap")
+                .queryParam("fid_cond_mrkt_div_code", "J")    // 시장 분류: 주식
+                .queryParam("fid_cond_scr_div_code", "20174") // Unique key
+                .queryParam("fid_div_cls_code", "0")          // 전체 구분
+                .queryParam("fid_input_iscd", "0000")         // 전체 종목
+                .queryParam("fid_trgt_cls_code", "0")         // 대상 구분
+                .queryParam("fid_trgt_exls_cls_code", "0")    // 제외 구분
+                .queryParam("fid_input_price_1", "")
+                .queryParam("fid_input_price_2", "")
+                .queryParam("fid_vol_cnt", "")
+                .toUriString();
     }
 
     private HttpHeaders buildHeaders(HantoCredential hantoCredential, String transactionId) {

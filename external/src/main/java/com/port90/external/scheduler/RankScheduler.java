@@ -29,6 +29,7 @@ public class RankScheduler {
             hantoRankClient.getVolumeRank(credential);
             hantoRankClient.fetchAndSaveRiseRateRank(credential);
             hantoRankClient.fetchAndSaveFallRateRank(credential);
+            hantoRankClient.fetchMarketCapRanking(credential);
         } catch (Exception e) {
             log.error("Rank 데이터 업데이트 중 오류 발생: {}", e.getMessage(), e);
         }

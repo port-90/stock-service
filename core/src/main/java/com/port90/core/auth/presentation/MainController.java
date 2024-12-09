@@ -1,6 +1,7 @@
 package com.port90.core.auth.presentation;
 
 import com.port90.core.auth.application.MainDisplayService;
+import com.port90.core.auth.dto.response.MarketCap;
 import com.port90.core.auth.dto.response.RateRank;
 import com.port90.core.auth.dto.response.VolumeRank;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,11 @@ public class MainController {
     public ResponseEntity<List<RateRank>> displayFallRateRank(@RequestParam(defaultValue = "10") int limit) {
         List<RateRank> fallRateData = mainDisplayService.getFallRateData(limit);
         return ResponseEntity.ok(fallRateData);
+    }
+
+    @GetMapping("/market-cap")
+    public ResponseEntity<List<MarketCap>> displayMarketCapRank(@RequestParam(defaultValue = "10") int limit) {
+        List<MarketCap> marketCapData = mainDisplayService.getMarketCapData(limit);
+        return ResponseEntity.ok(marketCapData);
     }
 }

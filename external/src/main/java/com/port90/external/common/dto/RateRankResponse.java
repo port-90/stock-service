@@ -23,4 +23,31 @@ public class RateRankResponse {
 
     @JsonProperty("output")
     private List<RateRank> output; // 상승률/하락률 순위 리스트
+
+    @Getter
+    @Setter
+    @ToString
+    public static class RateRank {
+
+        @JsonProperty("mksc_shrn_iscd")
+        private String mkscShrnIscd; // 종목 코드
+
+        @JsonProperty("data_rank")
+        private String dataRank; // 데이터 순위
+
+        @JsonProperty("hts_kor_isnm")
+        private String htsKorIsnm; // 종목명
+
+        @JsonProperty("stck_prpr")
+        private String stckPrpr; // 현재가
+
+        @JsonProperty("prdy_vrss")
+        private String prdyVrss; // 전일 대비
+
+        @JsonProperty("prdy_vrss_sign")
+        private String prdyVrssSign; // 전일 대비 부호
+
+        @JsonProperty("prdy_ctrt")
+        private String prdyCtrt; // 전일 대비율
+    }
 }

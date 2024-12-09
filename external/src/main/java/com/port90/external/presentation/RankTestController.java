@@ -1,6 +1,7 @@
 package com.port90.external.presentation;
 
 import com.port90.external.common.client.HantoRankClient;
+import com.port90.external.common.dto.MarketCapResponse;
 import com.port90.external.common.dto.RateRankResponse;
 import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
@@ -35,5 +36,12 @@ public class RankTestController {
     public RateRankResponse fetchFallRateRank() {
         HantoCredential credential = credentialRepository.findAll().getFirst();
         return hantoRankClient.fetchAndSaveFallRateRank(credential);
+    }
+
+    // 시가총액 데이터 호출
+    @GetMapping("/market-cap")
+    public MarketCapResponse getMarketCapRanking() {
+        HantoCredential credential = credentialRepository.findAll().getFirst();
+        return hantoRankClient.fetchMarketCapRanking(credential);
     }
 }

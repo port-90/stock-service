@@ -39,8 +39,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if (existData == null) {
             // 신규 사용자 처리
             logger.info("New user registered: {}", username);
-            User user = User.createUser(username, oAuth2Response.getName(), oAuth2Response.getEmail());
-            userRepositoryImpl.save(user);
+            User user = userRepositoryImpl.save(
+                    User.createUser(username, oAuth2Response.getName(), oAuth2Response.getEmail())
+            );
             return mapToCustomOAuth2User(user);
         } else {
             // 기존 사용자 업데이트 처리

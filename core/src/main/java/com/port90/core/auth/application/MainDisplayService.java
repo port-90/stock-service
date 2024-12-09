@@ -1,5 +1,6 @@
 package com.port90.core.auth.application;
 
+import com.port90.core.auth.dto.response.MarketCap;
 import com.port90.core.auth.dto.response.RateRank;
 import com.port90.core.auth.dto.response.VolumeRank;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,11 @@ public class MainDisplayService {
 
     public List<RateRank> getFallRateData(int limit) {
         List<RateRank> cachedData = rankDataCacheService.getFallRateData();
+        return cachedData.subList(0, Math.min(limit, cachedData.size()));
+    }
+
+    public List<MarketCap> getMarketCapData(int limit) {
+        List<MarketCap> cachedData = rankDataCacheService.getMarketCapData();
         return cachedData.subList(0, Math.min(limit, cachedData.size()));
     }
 }
