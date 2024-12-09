@@ -8,9 +8,8 @@ import com.port90.external.common.dto.RateRankResponse;
 import com.port90.external.common.dto.VolumeRankResponse;
 import com.port90.external.domain.HantoCredential;
 import com.port90.external.repository.HantoCredentialRepository;
-import com.port90.stockdomain.domain.rank.RateRankData;
-import com.port90.stockdomain.domain.rank.VolumeRankData;
-import com.port90.stockdomain.infrastructure.RateRankDataRepository;
+import com.port90.stockdomain.domain.rank.RankData;
+import com.port90.stockdomain.infrastructure.RankDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,16 +23,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class HantoRankClient {
     private final HantoCredentialRepository hantoCredentialRepository;
-    private final com.port90.stockdomain.infrastructure.VolumeRankDataRepository volumeRankDataRepository;
-    private final RateRankDataRepository rateRankDataRepository;
+    private final RankDataRepository rankDataRepository;
     private final ApiService apiService;
 
     private final ObjectMapper objectMapper = new ObjectMapper()
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL);
-
-    public static final Long RISE_RATE_ID = 1L; // 상승률
-    public static final Long FALL_RATE_ID = 2L; // 하락률
 
     @Value("${hanto.baseUrl}")
     private String BASE_URL;
@@ -63,37 +58,22 @@ public class HantoRankClient {
         ResponseEntity<VolumeRankResponse> response = apiService.getForObject(url, headers, VolumeRankResponse.class);
         VolumeRankResponse volumeRankResponse = response.getBody();
 
-        saveVolumeRankResponseAsJson(volumeRankResponse);
+        saveRankResponseAsJson(volumeRankResponse, RankData.RankType.VOLUME);
         log.info("API 호출 성공 및 데이터 저장 완료: {}", volumeRankResponse);
 
         return volumeRankResponse;
     }
 
-    private void saveVolumeRankResponseAsJson(VolumeRankResponse response) {
-        try {
-            String jsonData = objectMapper.writeValueAsString(response);
-
-            VolumeRankData volumeRankData = new VolumeRankData();
-            volumeRankData.setResponseData(jsonData);
-            volumeRankDataRepository.save(volumeRankData);
-
-            log.info("거래량 순위 데이터를 JSON으로 저장했습니다: {}", jsonData);
-        } catch (JsonProcessingException e) {
-            log.error("JSON 변환 중 오류 발생: {}", e.getMessage(), e);
-            throw new RuntimeException("거래량 순위 데이터를 JSON으로 저장하는 데 실패했습니다.");
-        }
-    }
-
     // 상승률 순위 API 호출 및 반환
     public RateRankResponse fetchAndSaveRiseRateRank(HantoCredential hantoCredential) {
         String url = buildRateRankUrl("0"); // 0: 상승률
-        return fetchAndSaveRateRankData(hantoCredential, url, 0);
+        return fetchAndSaveRateRankData(hantoCredential, url, RankData.RankType.RISE);
     }
 
     // 하락률 순위 API 호출 및 반환
     public RateRankResponse fetchAndSaveFallRateRank(HantoCredential hantoCredential) {
         String url = buildRateRankUrl("1"); // 1: 하락률
-        return fetchAndSaveRateRankData(hantoCredential, url, 1);
+        return fetchAndSaveRateRankData(hantoCredential, url, RankData.RankType.FALL);
     }
 
     private String buildRateRankUrl(String rankSortCode) {
@@ -116,14 +96,14 @@ public class HantoRankClient {
                 .toUriString();
     }
 
-    private RateRankResponse fetchAndSaveRateRankData(HantoCredential hantoCredential, String url, Integer rankType) {
+    private RateRankResponse fetchAndSaveRateRankData(HantoCredential hantoCredential, String url, RankData.RankType rankType) {
         HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01720000");
 
         try {
             ResponseEntity<RateRankResponse> response = apiService.getForObject(url, headers, RateRankResponse.class);
             RateRankResponse rateRankResponse = response.getBody();
 
-            saveRateRankResponseAsJson(rateRankResponse, rankType);
+            saveRankResponseAsJson(rateRankResponse, rankType);
             log.info("{} 데이터 저장 성공: {}", rankType, rateRankResponse);
             return rateRankResponse;
         } catch (Exception e) {
@@ -132,20 +112,20 @@ public class HantoRankClient {
         }
     }
 
-    private void saveRateRankResponseAsJson(RateRankResponse response, Integer rankType) {
+    private <T> void saveRankResponseAsJson(T response, RankData.RankType rankType) {
         try {
             String jsonData = objectMapper.writeValueAsString(response);
 
-            RateRankData rateRankData = new RateRankData();
-            if (rankType == 0) {
-                rateRankData.setId(RISE_RATE_ID);
-            } else if (rankType == 1) {
-                rateRankData.setId(FALL_RATE_ID);
-            }
-            rateRankData.setResponseData(jsonData);
-            rateRankDataRepository.save(rateRankData);
+            RankData rankData = rankDataRepository.findByType(rankType)
+                    .orElseGet(() -> {
+                        RankData newData = new RankData();
+                        newData.setType(rankType);
+                        return newData;
+                    });
+            rankData.setResponseData(jsonData);
+            rankDataRepository.save(rankData);
 
-            log.info("JSON 데이터를 저장했습니다 ({}): {}", rankType == 0 ? "상승률" : "하락률", jsonData);
+            log.info("JSON 데이터를 저장했습니다");
         } catch (JsonProcessingException e) {
             log.error("JSON 변환 중 오류 발생: {}", e.getMessage(), e);
             throw new RuntimeException("JSON 데이터를 저장하는 데 실패했습니다.", e);

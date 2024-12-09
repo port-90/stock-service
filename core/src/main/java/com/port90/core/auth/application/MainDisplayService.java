@@ -6,10 +6,8 @@ import com.port90.core.auth.dto.response.RateRank;
 import com.port90.core.auth.dto.response.RateRankResponse;
 import com.port90.core.auth.dto.response.VolumeRank;
 import com.port90.core.auth.dto.response.VolumeRankResponse;
-import com.port90.stockdomain.domain.rank.RateRankData;
-import com.port90.stockdomain.domain.rank.VolumeRankData;
-import com.port90.stockdomain.infrastructure.RateRankDataRepository;
-import com.port90.stockdomain.infrastructure.VolumeRankDataRepository;
+import com.port90.stockdomain.domain.rank.RankData;
+import com.port90.stockdomain.infrastructure.RankDataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,8 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MainDisplayService {
 
-    private final VolumeRankDataRepository volumeRankDataRepository;
-    private final RateRankDataRepository rateRankDataRepository;
+    private final RankDataRepository rankDataRepository;
+    private final RankDataRepository rateRankDataRepository;
     private final ObjectMapper objectMapper;
 
     private static final String VOLUME_RANK_CACHE = "volumeRankCache";
@@ -36,12 +34,9 @@ public class MainDisplayService {
     @Cacheable(value = VOLUME_RANK_CACHE, key = "'volume:rank'", unless = "#result == null || #result.isEmpty()")
     public List<VolumeRank> getVolumeRankData() {
         log.info("Redis 캐시 미스 발생, DB에서 데이터를 가져옵니다.");
-
-        // DB에서 데이터 가져오기
-        VolumeRankData latestData = volumeRankDataRepository.findAll().getFirst();
+        RankData latestData = rankDataRepository.findByType(RankData.RankType.VOLUME).orElseThrow(RuntimeException::new);
 
         try {
-            // JSON 데이터를 DTO 리스트로 변환
             VolumeRankResponse volumeRankResponse = objectMapper.readValue(latestData.getResponseData(), VolumeRankResponse.class);
             return volumeRankResponse.getOutput();
         } catch (JsonProcessingException e) {
@@ -57,7 +52,7 @@ public class MainDisplayService {
         log.info("Redis 캐시 미스 발생, DB에서 상승률 데이터를 가져옵니다.");
 
         // DB에서 데이터 가져오기
-        RateRankData riseRateData = rateRankDataRepository.findById(1L)
+        RankData riseRateData = rateRankDataRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("상승률 데이터가 없습니다."));
 
         try {
@@ -77,7 +72,7 @@ public class MainDisplayService {
         log.info("Redis 캐시 미스 발생, DB에서 하락률 데이터를 가져옵니다.");
 
         // DB에서 데이터 가져오기
-        RateRankData fallRateData = rateRankDataRepository.findById(2L)
+        RankData fallRateData = rateRankDataRepository.findById(2L)
                 .orElseThrow(() -> new RuntimeException("하락률 데이터가 없습니다."));
 
         try {
