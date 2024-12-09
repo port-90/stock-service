@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/favorite-stocks")
+@RequestMapping("/favorite-stocks")
 @RequiredArgsConstructor
 public class FavoriteStockController {
     private final FavoriteStockService favoriteStockService;
