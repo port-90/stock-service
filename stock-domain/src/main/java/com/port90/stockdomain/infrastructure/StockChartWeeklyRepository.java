@@ -1,13 +1,14 @@
 package com.port90.stockdomain.infrastructure;
 
 import com.port90.stockdomain.domain.chart.StockChartWeekly;
+import com.port90.stockdomain.domain.chart.StockChartWeeklyId;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface StockChartWeeklyRepository extends JpaRepository<StockChartWeekly, Long> {
+public interface StockChartWeeklyRepository extends JpaRepository<StockChartWeekly, StockChartWeeklyId> {
 
     @Query("""
                 SELECT w
