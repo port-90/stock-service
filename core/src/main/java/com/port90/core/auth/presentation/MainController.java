@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -24,20 +25,20 @@ public class MainController {
     }
 
     @GetMapping("/volumes")
-    public ResponseEntity<List<VolumeRank>> displayVolumeRank() {
-        List<VolumeRank> volumeRankData = mainDisplayService.getVolumeRankData();
+    public ResponseEntity<List<VolumeRank>> displayVolumeRank(@RequestParam(defaultValue = "10") int limit) {
+        List<VolumeRank> volumeRankData = mainDisplayService.getVolumeRankData(limit);
         return ResponseEntity.ok(volumeRankData);
     }
 
     @GetMapping("rise")
-    public ResponseEntity<List<RateRank>> displayRiseRateRank() {
-        List<RateRank> riseRateData = mainDisplayService.getRiseRateData();
+    public ResponseEntity<List<RateRank>> displayRiseRateRank(@RequestParam(defaultValue = "10") int limit) {
+        List<RateRank> riseRateData = mainDisplayService.getRiseRateData(limit);
         return ResponseEntity.ok(riseRateData);
     }
 
     @GetMapping("/fall")
-    public ResponseEntity<List<RateRank>> displayFallRateRank() {
-        List<RateRank> fallRateData = mainDisplayService.getFallRateData();
+    public ResponseEntity<List<RateRank>> displayFallRateRank(@RequestParam(defaultValue = "10") int limit) {
+        List<RateRank> fallRateData = mainDisplayService.getFallRateData(limit);
         return ResponseEntity.ok(fallRateData);
     }
 }
