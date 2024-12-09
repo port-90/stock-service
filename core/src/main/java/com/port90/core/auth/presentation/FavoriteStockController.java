@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/favorite-stocks")
+@RequestMapping("/api/favorite-stocks")
 @RequiredArgsConstructor
 public class FavoriteStockController {
     private final FavoriteStockService favoriteStockService;
@@ -25,7 +25,6 @@ public class FavoriteStockController {
         return ResponseEntity.status(201).body(response);
     }
 
-    // 관심 주식 조회 API
     @GetMapping
     public ResponseEntity<List<FavoriteStockResponse>> getFavoriteStocks(
             @AuthenticationPrincipal CustomOAuth2User user) {
@@ -35,8 +34,8 @@ public class FavoriteStockController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteFavoriteStock(@RequestParam Long userId, @RequestParam String stockCode) {
-        favoriteStockService.deleteFavoriteStock(userId, stockCode);
+    public ResponseEntity<Void> deleteFavoriteStock(@RequestParam String stockCode, @AuthenticationPrincipal CustomOAuth2User user) {
+        favoriteStockService.deleteFavoriteStock(user.getUserId(), stockCode);
         return ResponseEntity.noContent().build();
     }
 }

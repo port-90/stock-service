@@ -18,7 +18,7 @@ import java.util.Iterator;
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
-    private static final int TOKEN_EXPIRATION_TIME_SECONDS = 60 * 60; // 1시간
+    private static final int TOKEN_EXPIRATION_TIME_SECONDS =  10 * 60 * 60; // 9+1시간 (UTC 고려)
 
     public CustomSuccessHandler(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;

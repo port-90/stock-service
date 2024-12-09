@@ -18,19 +18,13 @@ import java.util.List;
 public class MainController {
     private final MainDisplayService mainDisplayService;
 
-    @GetMapping("/")
-    public String mainAPI() {
-
-        return "main route";
-    }
-
     @GetMapping("/volumes")
     public ResponseEntity<List<VolumeRank>> displayVolumeRank(@RequestParam(defaultValue = "10") int limit) {
         List<VolumeRank> volumeRankData = mainDisplayService.getVolumeRankData(limit);
         return ResponseEntity.ok(volumeRankData);
     }
 
-    @GetMapping("rise")
+    @GetMapping("/rise")
     public ResponseEntity<List<RateRank>> displayRiseRateRank(@RequestParam(defaultValue = "10") int limit) {
         List<RateRank> riseRateData = mainDisplayService.getRiseRateData(limit);
         return ResponseEntity.ok(riseRateData);

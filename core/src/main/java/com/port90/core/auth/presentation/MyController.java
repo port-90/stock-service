@@ -8,22 +8,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/my")
 public class MyController {
     private final UserService userService;
 
-    @GetMapping("")
-    public String myAPI() {
+    @GetMapping("/")
+    public String mainRoute() {
 
-        return "my route";
+        return "main";
     }
 
-    @GetMapping("/comments")
+    @GetMapping("/my/comments")
     public Page<CommentResponse> getMyComments(@AuthenticationPrincipal CustomOAuth2User user, Pageable pageable) {
         return userService.getCommentsByUserId(user.getUserId(), pageable);
     }
