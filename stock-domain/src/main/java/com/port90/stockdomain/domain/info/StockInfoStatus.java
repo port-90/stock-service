@@ -1,11 +1,12 @@
 package com.port90.stockdomain.domain.info;
 
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum StockStatus {
-    STOP("거래정지"),
+public enum StockInfoStatus {
+    OPEN("거래중"),
     CLOSE("상장폐지"),
-    OPEN("거래가능");
+    STOP("거래정지");
     private final String discription;
 }

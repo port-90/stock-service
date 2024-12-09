@@ -29,4 +29,5 @@ public class StockChartDaily {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
 }

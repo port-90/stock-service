@@ -8,16 +8,14 @@ public record LikeCreateResponse(
         Long likeId,
         Long userId,
         Long commentId,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        LocalDateTime createdAt
 ) {
     public static LikeCreateResponse from(Like like) {
         return new LikeCreateResponse(
                 like.getId(),
                 like.getUserId(),
                 like.getCommentId(),
-                like.getCreatedAt(),
-                like.getUpdatedAt()
+                like.getCreatedAt()
         );
     }
 }

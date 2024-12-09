@@ -16,12 +16,15 @@ public class Comment {
     private Long id;
     private String stockCode;
     private Long userId;
-    private String guestId;
     private String guestPassword;
     private String content;
     private Long parentId;
     private int likeCount;
-    private boolean hasChildren;
+    private boolean isParent;
+    private boolean isChild;
+    private boolean isUserComment;
+    private boolean isAnonymousUserComment;
+    private boolean isGuestComment;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,48 +35,50 @@ public class Comment {
                 .content(content)
                 .parentId(parentId)
                 .likeCount(0)
-                .hasChildren(false)
+                .isUserComment(true)
                 .build();
     }
 
-    public static Comment createByGuest(String stockCode, String guestId, String guestPassword, String content, Long parentId) {
+    public static Comment createByAnonymousUser(Long userId, String stockCode, String content, Long parentId) {
+        return Comment.builder()
+                .userId(userId)
+                .stockCode(stockCode)
+                .content(content)
+                .parentId(parentId)
+                .likeCount(0)
+                .isAnonymousUserComment(true)
+                .build();
+    }
+
+    public static Comment createByGuest(String stockCode, String guestPassword, String content, Long parentId) {
         return Comment.builder()
                 .stockCode(stockCode)
-                .guestId(guestId)
                 .guestPassword(guestPassword)
                 .content(content)
                 .parentId(parentId)
                 .likeCount(0)
-                .hasChildren(false)
+                .isGuestComment(true)
                 .build();
     }
 
-    public boolean isUserComment() {
-        return this.userId != null && this.guestId == null;
+    public void hasChild() {
+        this.isParent = true;
     }
 
-    public boolean isNotCreatedBy(Long userId) {
+    public void hasParent() {
+        this.isChild = true;
+    }
+
+    public boolean isNotWrittenBy(Long userId) {
         return !Objects.equals(this.userId, userId);
-    }
-
-    public boolean isGuestComment() {
-        return this.userId == null && (this.guestId != null && this.guestPassword != null);
     }
 
     public void updateContent(String content) {
         this.content = content;
     }
 
-    public void existChildren() {
-        this.hasChildren = true;
-    }
-
-    public boolean hasParent() {
-        return this.parentId != null;
-    }
-
-    public void nonExistChildren() {
-        this.hasChildren = false;
+    public void isNotParent() {
+        this.isParent = false;
     }
 
     public void increaseLikeCount() {

@@ -18,14 +18,12 @@ import java.util.Optional;
 @Repository
 public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long> {
 
-    @Query("select c.id from Comment c where c.parentId = :commentId")
-    List<Long> findChildIdsByParentId(@Param("commentId") Long commentId);
+    @Query("select c.id from Comment c where c.parentId = :parentId")
+    List<Long> findChildIdsByParentId(@Param("parentId") Long parentId);
 
     @Modifying
     @Query("delete from Comment c where c.id in :commentIds")
     int deleteAllByIdIn(@Param("commentIds") List<Long> commentIds);
-
-    long countByParentId(Long parentId);
 
     @Lock(LockModeType.OPTIMISTIC)
     @Query("select c from Comment c where c.id = :commentId")

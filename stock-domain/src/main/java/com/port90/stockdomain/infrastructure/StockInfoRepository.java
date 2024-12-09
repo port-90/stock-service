@@ -1,6 +1,7 @@
 package com.port90.stockdomain.infrastructure;
 
 import com.port90.stockdomain.domain.info.StockInfo;
+import com.port90.stockdomain.domain.info.StockInfoStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -14,4 +15,6 @@ public interface StockInfoRepository extends JpaRepository<StockInfo, String> {
     List<String> findAllStockCodes();
 
     boolean existsByStockCode(String stockCode);
+
+    List<StockInfo> findByStatusNot(StockInfoStatus stockInfoStatus);
 }
