@@ -4,16 +4,14 @@ import com.port90.core.comment.domain.model.Comment;
 
 import java.time.LocalDateTime;
 
-public record CommentUpdatedResponse(
+public record CommentUpdateResponse(
         Long commentId,
-        String stockCode,
         String content,
         LocalDateTime updatedAt
 ) {
-    public static CommentUpdatedResponse from(Comment comment) {
-        return new CommentUpdatedResponse(
+    public static CommentUpdateResponse from(Comment comment) {
+        return new CommentUpdateResponse(
                 comment.getId(),
-                comment.getStockCode(),
                 comment.getContent(),
                 comment.getUpdatedAt()
         );

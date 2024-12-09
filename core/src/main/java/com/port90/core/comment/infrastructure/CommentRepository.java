@@ -4,6 +4,7 @@ import com.port90.core.comment.domain.model.Comment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentRepository {
@@ -24,4 +25,8 @@ public interface CommentRepository {
     void delete(Comment comment);
 
     Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable); // 페이징 지원
+
+    List<Comment> findCommentsByStockCodeByCursorBetween(String stockCode, Long cursor, int size, LocalDateTime start, LocalDateTime end);
+
+    int countByParentId(Long parentId);
 }

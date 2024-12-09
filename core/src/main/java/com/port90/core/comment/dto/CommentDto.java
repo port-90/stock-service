@@ -1,6 +1,7 @@
 package com.port90.core.comment.dto;
 
-import com.port90.core.comment.domain.model.Comment;
+import com.port90.core.comment.domain.model.GuestComment;
+import com.port90.core.comment.domain.model.UserComment;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +15,11 @@ public record CommentDto(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static CommentDto fromGuestOrAnonymousUser(Comment comment, String guestName) {
+    public static CommentDto from(UserComment comment) {
         return new CommentDto(
                 comment.getId(),
                 comment.getStockCode(),
-                guestName,
+                comment.getAuthor(),
                 comment.getContent(),
                 comment.getLikeCount(),
                 comment.isParent(),
@@ -27,11 +28,24 @@ public record CommentDto(
         );
     }
 
-    public static CommentDto fromUser(Comment comment, String username) {
+    public static CommentDto from(UserComment comment, String author) {
         return new CommentDto(
                 comment.getId(),
                 comment.getStockCode(),
-                username,
+                author,
+                comment.getContent(),
+                comment.getLikeCount(),
+                comment.isParent(),
+                comment.getCreatedAt(),
+                comment.getUpdatedAt()
+        );
+    }
+
+    public static CommentDto from(GuestComment comment) {
+        return new CommentDto(
+                comment.getId(),
+                comment.getStockCode(),
+                comment.getAuthor(),
                 comment.getContent(),
                 comment.getLikeCount(),
                 comment.isParent(),
