@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Entity(name = "Like")
+@Entity(name = "Likes")
 @EntityListeners(AuditingEntityListener.class)
 public class LikeEntity {
 
