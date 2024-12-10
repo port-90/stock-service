@@ -10,7 +10,6 @@ public record StockChartRequest(
         @NotNull ChartType chartType,
         @NotNull LocalDate startDate,
         @NotNull LocalDate endDate,
-        @NotNull Integer limit,
         LocalTime startTime,
         LocalTime endTime
 ) {
