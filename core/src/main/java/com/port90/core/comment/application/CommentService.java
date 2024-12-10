@@ -35,8 +35,8 @@ import static com.port90.core.comment.domain.exception.CommentErrorCode.*;
 @RequiredArgsConstructor
 public class CommentService {
 
+    private static final String ANONYMOUS_AUTHOR_NAME = "익명";
     private final CommentRepository commentRepository;
-    private final AuthorNameGenerator authorNameGenerator;
     private final PasswordEncoder passwordEncoder;
     private final StockInfoRepository stockInfoRepository;
     private final UserRepository userRepository;
@@ -258,7 +258,7 @@ public class CommentService {
         return UserComment.create(
                 request.stockCode(),
                 request.content(),
-                authorNameGenerator.generate(),
+                ANONYMOUS_AUTHOR_NAME,
                 request.parentId(),
                 userId,
                 true
@@ -293,7 +293,7 @@ public class CommentService {
                 request.stockCode(),
                 request.content(),
                 request.parentId(),
-                authorNameGenerator.generate(),
+                ANONYMOUS_AUTHOR_NAME,
                 passwordEncoder.encode(request.password())
         );
     }
