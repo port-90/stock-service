@@ -24,6 +24,7 @@ public class CommentMapper {
                     .isAnonymous(userComment.isAnonymous())
                     .createdAt(userComment.getCreatedAt())
                     .updatedAt(userComment.getUpdatedAt())
+                    .version(userComment.getVersion())
                     .build();
         }
 
@@ -40,6 +41,7 @@ public class CommentMapper {
                 .password(guestComment.getPassword())
                 .createdAt(guestComment.getCreatedAt())
                 .updatedAt(guestComment.getUpdatedAt())
+                .version(guestComment.getVersion())
                 .build();
     }
 
@@ -58,6 +60,7 @@ public class CommentMapper {
                     .isAnonymous(userCommentEntity.isAnonymous())
                     .createdAt(userCommentEntity.getCreatedAt())
                     .updatedAt(userCommentEntity.getUpdatedAt())
+                    .version(userCommentEntity.getVersion())
                     .build();
         }
 
@@ -74,6 +77,7 @@ public class CommentMapper {
                 .password(guestCommentEntity.getPassword())
                 .createdAt(guestCommentEntity.getCreatedAt())
                 .updatedAt(guestCommentEntity.getUpdatedAt())
+                .version(guestCommentEntity.getVersion())
                 .build();
     }
 }

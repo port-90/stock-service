@@ -22,6 +22,7 @@ public abstract class Comment {
     private boolean isChild;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Long version;
 
     public void hasChild() {
         this.isParent = true;
