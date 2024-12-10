@@ -1,7 +1,6 @@
 package com.port90.core.like.infrastructure;
 
 import com.port90.core.like.domain.model.Like;
-import jakarta.validation.constraints.NotNull;
 
 public interface LikeRepository {
     Like save(Like like);
@@ -10,5 +9,5 @@ public interface LikeRepository {
 
     Like findById(Long likeId);
 
-    void delete(Like like);
+    void deleteById(Long likeId);
 }

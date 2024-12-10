@@ -39,7 +39,7 @@ public class LikeService {
         if (like.isNotLikedBy(userId)) {
             throw new LikeException(LIKE_USER_UNMATCHED);
         }
-        likeRepository.delete(like);
+        likeRepository.deleteById(like.getId());
 
         commentService.decreaseLikeCount(like.getCommentId());
     }
