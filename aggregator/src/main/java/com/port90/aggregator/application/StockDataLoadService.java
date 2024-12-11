@@ -4,8 +4,11 @@ import com.port90.aggregator.exception.StockDataEmptyException;
 import com.port90.aggregator.exception.StockErrorCode;
 import com.port90.stockdomain.domain.chart.StockChartDaily;
 import com.port90.stockdomain.domain.chart.StockChartMinute;
+import com.port90.stockdomain.domain.info.StockInfo;
+import com.port90.stockdomain.domain.info.StockInfoStatus;
 import com.port90.stockdomain.infrastructure.StockChartDailyRepository;
 import com.port90.stockdomain.infrastructure.StockChartMinuteRepository;
+import com.port90.stockdomain.infrastructure.StockInfoRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -18,6 +21,11 @@ public class StockDataLoadService {
 
     private final StockChartMinuteRepository minuteRepository;
     private final StockChartDailyRepository dailyRepository;
+    private final StockInfoRepository stockInfoRepository;
+
+    public List<StockInfo> getNotClosedStockInfoList() {
+        return stockInfoRepository.findByStatusNot(StockInfoStatus.CLOSE);
+    }
 
     public List<StockChartMinute> getStockChartMinuteByStockCodeAndDateAndTimeBetween(String stockCode,
             LocalDate specificDate,

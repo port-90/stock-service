@@ -5,10 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "stock_chart_monthly")
@@ -39,6 +41,8 @@ public class StockChartMonthly {
     private String totalVolume;
     @Column(nullable = false)
     private String totalPrice;
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
     @Builder
     @SuppressWarnings({"unused", "java:S107"})

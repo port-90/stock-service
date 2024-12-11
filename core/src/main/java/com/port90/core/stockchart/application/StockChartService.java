@@ -8,7 +8,9 @@ import com.port90.core.stockchart.dto.response.StockChartResponse;
 import com.port90.stockdomain.infrastructure.StockChartDailyRepository;
 import com.port90.stockdomain.infrastructure.StockChartHourlyRepository;
 import com.port90.stockdomain.infrastructure.StockChartMinuteRepository;
+import com.port90.stockdomain.infrastructure.StockChartMonthlyRepository;
 import com.port90.stockdomain.infrastructure.StockChartWeeklyRepository;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ public class StockChartService {
     private final StockChartHourlyRepository hourlyRepository;
     private final StockChartDailyRepository dailyRepository;
     private final StockChartWeeklyRepository weeklyRepository;
+    private final StockChartMonthlyRepository monthlyRepository;
 
     public StockChartResponse getStockChart(StockChartRequest request) {
         List<ChartData> chartData = getChartData(request);
@@ -34,6 +37,7 @@ public class StockChartService {
             case HOURLY -> fetchHourlyData(request);
             case DAILY -> fetchDailyData(request);
             case WEEKLY -> fetchWeeklyData(request);
+            case MONTHLY -> fetchMonthlyData(request);
             default -> throw new StockChartTypeException(StockChartErrorCode.STOCK_CHART_TYPE_NOT_FOUND);
         };
     }
@@ -111,6 +115,33 @@ public class StockChartService {
                 .stream()
                 .map(entity -> new ChartData(
                         entity.getDate(),
+                        null,
+                        entity.getOpenPrice(),
+                        entity.getClosePrice(),
+                        entity.getHighPrice(),
+                        entity.getLowPrice(),
+                        entity.getTotalVolume(),
+                        entity.getTotalPrice()
+                ))
+                .toList();
+    }
+
+    private List<ChartData> fetchMonthlyData(StockChartRequest request) {
+        Integer startYear = request.startDate().getYear();
+        Integer startMonth = request.startDate().getMonthValue();
+        Integer endYear = request.endDate().getYear();
+        Integer endMonth = request.endDate().getMonthValue();
+
+        return monthlyRepository.findByStockCodeAndDateRange(
+                        request.stockCode(),
+                        startYear,
+                        startMonth,
+                        endYear,
+                        endMonth
+                )
+                .stream()
+                .map(entity -> new ChartData(
+                        LocalDate.of(entity.getYear(), entity.getMonth(), 1),
                         null,
                         entity.getOpenPrice(),
                         entity.getClosePrice(),

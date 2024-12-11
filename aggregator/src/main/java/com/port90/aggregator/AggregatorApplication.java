@@ -5,10 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableJpaRepositories(basePackages = "com.port90")
 @EntityScan(basePackages = "com.port90")
 @ComponentScan(basePackages = "com.port90")
+@EnableScheduling
 @SpringBootApplication
 public class AggregatorApplication {
 
