@@ -5,7 +5,6 @@ import com.port90.core.auth.jwt.JWTFilter;
 import com.port90.core.auth.jwt.JWTUtil;
 import com.port90.core.auth.oauth2.CustomLogoutSuccessHandler;
 import com.port90.core.auth.oauth2.CustomSuccessHandler;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,7 +16,6 @@ import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationF
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
 
@@ -40,24 +38,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.csrf(AbstractHttpConfigurer::disable)      // CSRF 비활성화
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
 
-                    @Override
-                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                    CorsConfiguration configuration = new CorsConfiguration();
 
-                        CorsConfiguration configuration = new CorsConfiguration();
+                    configuration.setAllowedOrigins(Collections.singletonList("*"));
+                    configuration.setAllowedMethods(Collections.singletonList("*"));
+                    configuration.setAllowedHeaders(Collections.singletonList("*"));
+                    configuration.setAllowCredentials(true);
+                    configuration.setMaxAge(3600L);
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
+                    configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
+                    configuration.setExposedHeaders(Collections.singletonList("Authorization"));
 
-                        configuration.setExposedHeaders(Collections.singletonList("Set-Cookie"));
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-
-                        return configuration;
-                    }
+                    return configuration;
                 }))
                 .formLogin(AbstractHttpConfigurer::disable)      // Form 로그인 비활성화
                 .httpBasic(AbstractHttpConfigurer::disable)      // HTTP Basic 인증 비활성화
@@ -67,7 +61,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler))
                 .authorizeHttpRequests(auth -> auth             // 경로별 인가 설정
-                        .requestMatchers("/", "/login", "/api/ranks/*", "/comments/guests/**")
+                        .requestMatchers("/", "/login", "/api/ranks/*", "/comments/guests/**", "/error")
                         .permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/comments/**"))
                         .permitAll()

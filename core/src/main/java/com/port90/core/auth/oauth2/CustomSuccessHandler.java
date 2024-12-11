@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -18,7 +19,10 @@ import java.util.Iterator;
 @Component
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JWTUtil jwtUtil;
-    private static final int TOKEN_EXPIRATION_TIME_SECONDS =  10 * 60 * 60; // 9+1시간 (UTC 고려)
+    private static final int TOKEN_EXPIRATION_TIME_SECONDS = 10 * 60 * 60; // 9+1시간 (UTC 고려)
+
+    @Value("${spring.login-redirect.url}")
+    private String loginRedirectUrl;
 
     public CustomSuccessHandler(JWTUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -26,7 +30,6 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-
         //OAuth2User
         CustomOAuth2User customUserDetails = (CustomOAuth2User) authentication.getPrincipal();
 
@@ -41,7 +44,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = jwtUtil.createJwt(userId, username, role, TOKEN_EXPIRATION_TIME_SECONDS * 1000L);
 
         response.addCookie(createCookie("Authorization", token));
-        response.sendRedirect("http://localhost:8080/");
+        response.sendRedirect(loginRedirectUrl);
     }
 
     private Cookie createCookie(String key, String value) {

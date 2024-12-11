@@ -27,6 +27,7 @@ public class UserService {
                 .commentId(comment.getId())
                 .stockCode(comment.getStockCode())
                 .content(comment.getContent())
+                .likeCount(comment.getLikeCount())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
                 .build());
