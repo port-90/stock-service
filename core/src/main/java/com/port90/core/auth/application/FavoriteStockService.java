@@ -56,6 +56,10 @@ public class FavoriteStockService {
     public List<FavoriteStockResponse> getFavoriteStocks(Long userId) {
         List<FavoriteStock> favoriteStocks = favoriteStockRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
+        if (favoriteStocks.isEmpty()) {
+            throw new UserException(ErrorCode.STOCK_NOT_FOUND);
+        }
+
         return favoriteStocks.stream()
                 .map(stock -> {
                     // StockChartMinute 조회

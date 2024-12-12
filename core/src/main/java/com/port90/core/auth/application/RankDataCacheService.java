@@ -2,6 +2,8 @@ package com.port90.core.auth.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.port90.core.auth.domain.exception.APIDataException;
+import com.port90.core.auth.domain.exception.ErrorCode;
 import com.port90.core.auth.dto.response.*;
 import com.port90.stockdomain.domain.rank.RankData;
 import com.port90.stockdomain.infrastructure.RankDataRepository;
@@ -23,28 +25,28 @@ public class RankDataCacheService {
     @Cacheable(value = "volumeRankCache", key = "'volume:rank'", unless = "#result == null || #result.isEmpty()")
     public List<VolumeRank> getVolumeRankData() {
         RankData latestData = rankDataRepository.findByType(RankData.RankType.VOLUME)
-                .orElseThrow(() -> new RuntimeException("거래량 데이터가 없습니다."));
+                .orElseThrow(() -> new APIDataException(ErrorCode.DATA_NOT_FOUND));
         return parseResponseData(latestData, VolumeRankResponse.class).getOutput();
     }
 
     @Cacheable(value = "riseRateCache", key = "'rise:rate'", unless = "#result == null || #result.isEmpty()")
     public List<RateRank> getRiseRateData() {
         RankData riseRateData = rankDataRepository.findByType(RankData.RankType.RISE)
-                .orElseThrow(() -> new RuntimeException("상승률 데이터가 없습니다."));
+                .orElseThrow(() -> new APIDataException(ErrorCode.DATA_NOT_FOUND));
         return parseResponseData(riseRateData, RateRankResponse.class).getOutput();
     }
 
     @Cacheable(value = "fallRateCache", key = "'fall:rate'", unless = "#result == null || #result.isEmpty()")
     public List<RateRank> getFallRateData() {
         RankData fallRateData = rankDataRepository.findByType(RankData.RankType.FALL)
-                .orElseThrow(() -> new RuntimeException("하락률 데이터가 없습니다."));
+                .orElseThrow(() -> new APIDataException(ErrorCode.DATA_NOT_FOUND));
         return parseResponseData(fallRateData, RateRankResponse.class).getOutput();
     }
 
     @Cacheable(value = "marketCapCache", key = "'market:cap'", unless = "#result == null || #result.isEmpty()")
     public List<MarketCap> getMarketCapData() {
         RankData marketCapData = rankDataRepository.findByType(RankData.RankType.MARKET_CAP)
-                .orElseThrow(() -> new RuntimeException("시가총액 데이터가 없습니다."));
+                .orElseThrow(() -> new APIDataException(ErrorCode.DATA_NOT_FOUND));
         return parseResponseData(marketCapData, MarketCapResponse.class).getOutput();
     }
 
@@ -52,7 +54,7 @@ public class RankDataCacheService {
         try {
             return objectMapper.readValue(rankData.getResponseData(), responseType);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON 데이터를 파싱하는 데 실패했습니다.", e);
+            throw new APIDataException(ErrorCode.DATA_PARSING_ERROR);
         }
     }
 }
