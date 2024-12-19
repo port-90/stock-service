@@ -23,19 +23,30 @@ public class StockChartTask {
     private final StockChartMinuteMapper stockChartMinuteMapper;
     private final HantoClient hantoClient;
 
-    @Async
+
     @Transactional
+    @Async
     public void processStocks(HantoCredential credentials, List<String> stockCodes) {
-        LocalTime baseTime = LocalTime.now();
+        LocalTime baseTime = LocalTime.now();  // 현재 시간으로 기본 시간 설정
         log.info("[CREDENTIALS] {}", credentials.getName());
+
+        int i = 0;
         for (String stockCode : stockCodes) {
             List<StockResponse> responses = hantoClient.getMinuteChart(credentials, stockCode, baseTime);
-            log.info("[API CALLED] {}", responses.size());
             convertToDomainAndSaveAllChartMinuteData(responses);
+            i++;
+            if (i % 15 == 0) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
     public void convertToDomainAndSaveAllChartMinuteData(List<StockResponse> stockResponses) {
+
         StockChartMinute recentSavedStock = new StockChartMinute();
         for (int i = 0; i < stockResponses.size(); i++) {
             StockChartMinute stockChartMinute = stockChartMinuteMapper.toEntity(stockResponses.get(i));
@@ -58,6 +69,7 @@ public class StockChartTask {
                 log.debug("already saved data");
                 break;
             }
+
             stockChartMinuteRepository.save(stockChartMinute);
             log.debug("[StockChartMinute] saved : {}", stockChartMinute);
         }
