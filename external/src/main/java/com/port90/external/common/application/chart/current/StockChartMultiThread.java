@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -21,9 +19,8 @@ public class StockChartMultiThread {
     private final StockInfoRepository stockInfoRepository;
     private final StockChartTask stockChartTask;
     private final HantoClient hantoClient;
-    private final ExecutorService executorService = Executors.newFixedThreadPool(4); // 4개의 스레드 생성
 
-    @Scheduled(cron = "0 * 9-15 * * 1-5")
+    @Scheduled(cron = "0 1 9 * * 1-5")
     public void run() {
         List<HantoCredential> credentials = hantoClient.getCredentials();
         String result = hantoClient.isHoliday(credentials.getFirst(), LocalDate.now());
@@ -36,7 +33,7 @@ public class StockChartMultiThread {
             HantoCredential credential = credentials.get(i);
             List<String> stockCodeGroup = stockCodeGroups.get(i);
             // 각 credential 별 작업을 비동기로 실행
-            executorService.submit(() -> stockChartTask.processStocks(credential, stockCodeGroup));
+            stockChartTask.processStocks(credential, stockCodeGroup);
         }
     }
 
