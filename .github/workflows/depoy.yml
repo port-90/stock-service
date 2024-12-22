@@ -65,7 +65,8 @@ jobs:
         run: |
           echo "${{ secrets.EXTERNAL_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
-          scp -i private_key.pem -o StrictHostKeyChecking=no external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
+          scp -v -i private_key.pem -o StrictHostKeyChecking=no external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
+          echo "scp is finished"
           rm -f private_key.pem
      
       - name: Run Script
