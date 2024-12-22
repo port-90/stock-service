@@ -67,7 +67,9 @@ jobs:
           chmod 600 private_key.pem
           scp -i private_key.pem -o StrictHostKeyChecking=no external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-          cd {{ secrets.EXTERNAL_PATH }} 
+          cd {{ secrets.EXTERNAL_PATH }}
+          mv external.jar external-before.jar
+          mv external-01.jar external.jar
           ./start.sh
           EOF
           rm -f private_key.pem
