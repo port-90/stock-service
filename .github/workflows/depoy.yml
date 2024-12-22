@@ -33,7 +33,7 @@ jobs:
       - name: Copy application.yml
         env:
           APPLICATION_YML_FILE: ${{ secrets.EXTERNAL_YML }}
-        run: echo $APPLICATION_YML_FILE | base64 --decode > external/src/main/resources/application.yml
+        run: echo $APPLICATION_YML_FILE > external/src/main/resources/application.yml
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
