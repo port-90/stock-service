@@ -1,2 +1,5 @@
 rootProject.name = 'stock-service'
-include 'comment'
+include 'core'
+include 'external'
+include 'stock-domain'
+include 'aggregator'
