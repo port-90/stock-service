@@ -66,7 +66,7 @@ jobs:
           echo "${{ secrets.EXTERNAL_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
           sftp -i private_key.pem ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }} << EOF
-          put external-0.0.1-SNAPSHOT.jar ${{secrets.EXTERNAL_PATH}}/external-0.0.1-SNAPSHOT.jar
+          put external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_PATH }}/external-01.jar
           EOF
           rm -f private_key.pem
      
