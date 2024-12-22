@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: external
-          path: build/libs/external-0.0.1-SNAPSHOT.jar
+          path: external/build/libs/external-0.0.1-SNAPSHOT.jar
 
   # 배포
   deploy:
@@ -59,14 +59,13 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: stock-server
-          path: build/libs/
+          name: external
 
       - name: Deploy to EC2
         run: |
           echo "${{ secrets.EXTERNAL_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
-          scp -i private_key.pem -o StrictHostKeyChecking=no build/libs/external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
+          scp -i private_key.pem -o StrictHostKeyChecking=no external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
           ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
           cd {{ secrets.EXTERNAL_PATH }} 
           ./start.sh
