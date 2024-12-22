@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -28,12 +29,18 @@ public class StockChartTask {
             int i = 0;
             long start = System.currentTimeMillis();
             for (String stockCode : stockCodes) {
-                List<StockResponse> responses = hantoClient.getMinuteChart(credentials, stockCode, baseTime);
-                stockChartMinuteSaveService.convertToDomainAndSaveAllChartMinuteData(responses);
+
+                try {
+                    List<StockResponse> responses = hantoClient.getMinuteChart(credentials, stockCode, baseTime);
+                    stockChartMinuteSaveService.convertToDomainAndSaveAllChartMinuteData(responses);
+                } catch (HttpServerErrorException e) {
+                    log.error("[HANTO API ERROR] {} ", e.getMessage());
+                }
+
                 i++;
                 if (i % 15 == 0) {
                     long end = System.currentTimeMillis();
-                    long delay = 1000 - (start - end);
+                    long delay = 1000 - (end - start);
                     log.info("[TIME CALC] {}, {}, {}", start, end, delay);
                     if (delay > 0) {
                         try {
