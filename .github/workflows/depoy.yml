@@ -66,7 +66,7 @@ jobs:
           echo "${{ secrets.EXTERNAL_SSH_KEY }}" > private_key.pem
           chmod 600 private_key.pem
           scp -i private_key.pem -o StrictHostKeyChecking=no external-0.0.1-SNAPSHOT.jar ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }}:${{ secrets.EXTERNAL_PATH }}/external-01.jar
-          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }} << 'EOF'
+          ssh -i private_key.pem -o StrictHostKeyChecking=no ${{ secrets.EXTERNAL_USERNAME }}@${{ secrets.EXTERNAL_HOST }} << EOF
           cd ${{ secrets.EXTERNAL_PATH }}
           mv external.jar external-before.jar
           mv external-01.jar external.jar
