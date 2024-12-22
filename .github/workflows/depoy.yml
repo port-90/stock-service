@@ -27,7 +27,9 @@ jobs:
         with:
           java-version: '21'
           distribution: 'corretto'
-
+      - name: Ensure resources directory exists
+        run: mkdir -p external/src/main/resources
+      
       - name: Copy application.yml
         env:
           APPLICATION_YML_FILE: ${{ secrets.EXTERNAL_YML }}
