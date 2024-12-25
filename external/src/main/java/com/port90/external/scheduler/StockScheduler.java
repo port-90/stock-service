@@ -33,7 +33,7 @@ public class StockScheduler {
         stockInfoService.updateStockInfoWithDetail();
     }
 
-    @Scheduled(cron = "0 0 20 * * *")
+    @Scheduled(cron = "0 0 16 * * *")
     public void syncDailyChart() {
         stockChartDailyService.fetchAndSaveDailyStockData(LocalDate.now());
     }

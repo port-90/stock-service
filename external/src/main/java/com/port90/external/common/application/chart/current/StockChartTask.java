@@ -22,7 +22,7 @@ public class StockChartTask {
     @Async
     public void processStocks(HantoCredential credentials, List<String> stockCodes) {
         LocalTime startTime = LocalTime.now();
-        while (startTime.isBefore(LocalTime.of(15, 31))) {
+        while (startTime.isBefore(LocalTime.of(15, 33))) {
             LocalTime baseTime = LocalTime.now().minusMinutes(1);  // 현재 시간으로 기본 시간 설정
             log.info("[CREDENTIALS] {}", credentials.getName());
 
