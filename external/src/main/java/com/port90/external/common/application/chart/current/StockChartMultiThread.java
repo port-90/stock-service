@@ -26,7 +26,7 @@ public class StockChartMultiThread {
         String result = hantoClient.isHoliday(credentials.getFirst(), LocalDate.now());
         if (result.equals("N")) return;
 
-        List<String> stockCodes = stockInfoRepository.findAllStockCodes();
+        List<String> stockCodes = stockInfoRepository.findCanTradingStockCodes();
         List<List<String>> stockCodeGroups = groupStockCodes(stockCodes);
         // 작업 분배 및 실행
         for (int i = 0; i < credentials.size(); i++) {

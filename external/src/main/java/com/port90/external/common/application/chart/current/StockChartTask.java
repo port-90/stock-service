@@ -34,13 +34,15 @@ public class StockChartTask {
                     List<StockResponse> responses = hantoClient.getMinuteChart(credentials, stockCode, baseTime);
                     stockChartMinuteSaveService.convertToDomainAndSaveAllChartMinuteData(responses);
                 } catch (HttpServerErrorException e) {
+                    log.error("[HANTO API LIMIT ERROR] {} ", e.getMessage());
+                } catch (Exception e) {
                     log.error("[HANTO API ERROR] {} ", e.getMessage());
                 }
 
                 i++;
                 if (i % 15 == 0) {
                     long end = System.currentTimeMillis();
-                    long delay = 1000 - (end - start);
+                    long delay = 1008 - (end - start);
                     log.info("[TIME CALC] {}, {}, {}", start, end, delay);
                     if (delay > 0) {
                         try {
