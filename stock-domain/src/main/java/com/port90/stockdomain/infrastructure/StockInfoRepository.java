@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface StockInfoRepository extends JpaRepository<StockInfo, String> {
 
-    @Query("SELECT s.stockCode from StockInfo s where s.status = 'OPEN' and s.stopStatus = 'N'")
+    @Query("SELECT s.stockCode from StockInfo s where s.status = 'OPEN'")
     List<String> findCanTradingStockCodes();
 
     boolean existsByStockCode(String stockCode);
