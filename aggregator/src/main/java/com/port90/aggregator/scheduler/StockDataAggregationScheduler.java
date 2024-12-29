@@ -79,19 +79,19 @@ public class StockDataAggregationScheduler {
     @Transactional
     public void aggregateMonthlyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
-        YearMonth currentMonth = YearMonth.now();
+        YearMonth previousMonth = YearMonth.now().minusMonths(1);
 
         for (String stockCode : stockCodeList) {
             try {
                 monthlyAggregationService.aggregateMonthlyData(
                         stockCode,
-                        currentMonth
+                        previousMonth
                 );
                 log.info("[Monthly Aggregation 성공] 주식코드: {}, 기준 연월: {}",
-                        stockCode, currentMonth);
+                        stockCode, previousMonth);
             } catch (Exception e) {
                 log.error("[Monthly Aggregation 실패] 주식코드: {}, 기준 연월: {}. 에러: {}",
-                        stockCode, currentMonth, e.getMessage(), e);
+                        stockCode, previousMonth, e.getMessage(), e);
             }
         }
     }
