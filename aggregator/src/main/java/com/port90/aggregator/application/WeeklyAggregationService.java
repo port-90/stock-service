@@ -22,7 +22,7 @@ public class WeeklyAggregationService {
     @Transactional
     public void aggregateWeeklyData(String stockCode, LocalDate dateInWeek) {
         LocalDate startOfWeek = dateInWeek.with(DayOfWeek.MONDAY);
-        LocalDate endOfWeek = dateInWeek.with(DayOfWeek.SUNDAY);
+        LocalDate endOfWeek = dateInWeek.with(DayOfWeek.FRIDAY);
 
         // 월봉 데이터 계산에 필요한 일봉 데이터 조회
         List<StockChartDaily> dailyData = stockDataLoadService.getStockChartDailyByStockCodeAndDateRange(
