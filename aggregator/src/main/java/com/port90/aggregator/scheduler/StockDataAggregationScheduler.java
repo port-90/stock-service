@@ -25,8 +25,8 @@ public class StockDataAggregationScheduler {
     private final WeeklyAggregationService weeklyAggregationService;
     private final MonthlyAggregationService monthlyAggregationService;
 
-    // 매일 10시부터 16시까지 매 시간 실행
-    @Scheduled(cron = "0 0 10-16 * * *")
+    // 매일 10시부터 16시까지 매 시간 5분에 실행
+    @Scheduled(cron = "0 5 10-16 * * *")
     @Transactional
     public void aggregateHourlyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
@@ -52,8 +52,8 @@ public class StockDataAggregationScheduler {
         }
     }
 
-    // 매주 월요일 00:00 실행
-    @Scheduled(cron = "0 0 0 * * MON")
+    // 매주 금요일 20:00 실행
+    @Scheduled(cron = "0 0 20 * * FRI")
     @Transactional
     public void aggregateWeeklyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
