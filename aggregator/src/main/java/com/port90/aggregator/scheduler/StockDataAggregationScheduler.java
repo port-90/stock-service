@@ -4,7 +4,6 @@ import com.port90.aggregator.application.HourlyAggregationService;
 import com.port90.aggregator.application.MonthlyAggregationService;
 import com.port90.aggregator.application.StockDataLoadService;
 import com.port90.aggregator.application.WeeklyAggregationService;
-import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.YearMonth;
@@ -27,7 +26,6 @@ public class StockDataAggregationScheduler {
 
     // 매일 10시부터 16시까지 매 시간 5분에 실행
     @Scheduled(cron = "0 5 10-16 * * *")
-    @Transactional
     public void aggregateHourlyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         LocalDate currentDate = LocalDate.now();
@@ -54,7 +52,6 @@ public class StockDataAggregationScheduler {
 
     // 매주 금요일 20:00 실행
     @Scheduled(cron = "0 0 20 * * FRI")
-    @Transactional
     public void aggregateWeeklyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         LocalDate currentDate = LocalDate.now();
@@ -76,7 +73,6 @@ public class StockDataAggregationScheduler {
 
     // 매월 1일 00:00 실행
     @Scheduled(cron = "0 0 0 1 * *")
-    @Transactional
     public void aggregateMonthlyDataForAllStocks() {
         List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         YearMonth previousMonth = YearMonth.now().minusMonths(1);
