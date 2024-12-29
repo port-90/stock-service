@@ -4,7 +4,6 @@ import com.port90.aggregator.application.HourlyAggregationService;
 import com.port90.aggregator.application.MonthlyAggregationService;
 import com.port90.aggregator.application.StockDataLoadService;
 import com.port90.aggregator.application.WeeklyAggregationService;
-import com.port90.stockdomain.domain.info.StockInfo;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -30,24 +29,24 @@ public class StockDataAggregationScheduler {
     @Scheduled(cron = "0 0 10-16 * * *")
     @Transactional
     public void aggregateHourlyDataForAllStocks() {
-        List<StockInfo> stockInfoList = stockDataLoadService.getNotClosedStockInfoList();
+        List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         LocalDate currentDate = LocalDate.now();
         LocalTime currentHour = LocalTime.now().truncatedTo(ChronoUnit.HOURS);
 
         log.info("currentHour: {}", currentHour);
-        for (StockInfo stockInfo : stockInfoList) {
+        for (String stockCode : stockCodeList) {
             try {
                 hourlyAggregationService.aggregateHourlyData(
-                        stockInfo.getStockCode(),
+                        stockCode,
                         currentDate,
                         currentHour.minusHours(1),
                         currentHour
                 );
                 log.info("[Hourly Aggregation 성공] 주식코드: {}, 날짜: {}, 시간: {}~{}",
-                        stockInfo.getStockCode(), currentDate, currentHour.minusHours(1), currentHour);
+                        stockCode, currentDate, currentHour.minusHours(1), currentHour);
             } catch (Exception e) {
                 log.error("[Hourly Aggregation 실패] 주식코드: {}, 날짜: {}, 시간: {}~{}. 에러: {}",
-                        stockInfo.getStockCode(), currentDate, currentHour.minusHours(1), currentHour, e.getMessage(),
+                        stockCode, currentDate, currentHour.minusHours(1), currentHour, e.getMessage(),
                         e);
             }
         }
@@ -57,20 +56,20 @@ public class StockDataAggregationScheduler {
     @Scheduled(cron = "0 0 0 * * MON")
     @Transactional
     public void aggregateWeeklyDataForAllStocks() {
-        List<StockInfo> stockInfoList = stockDataLoadService.getNotClosedStockInfoList();
+        List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         LocalDate currentDate = LocalDate.now();
 
-        for (StockInfo stockInfo : stockInfoList) {
+        for (String stockCode : stockCodeList) {
             try {
                 weeklyAggregationService.aggregateWeeklyData(
-                        stockInfo.getStockCode(),
+                        stockCode,
                         currentDate
                 );
                 log.info("[Weekly Aggregation 성공] 주식코드: {}, 기준 날짜: {}",
-                        stockInfo.getStockCode(), currentDate);
+                        stockCode, currentDate);
             } catch (Exception e) {
                 log.error("[Weekly Aggregation 실패] 주식코드: {}, 기준 날짜: {}. 에러: {}",
-                        stockInfo.getStockCode(), currentDate, e.getMessage(), e);
+                        stockCode, currentDate, e.getMessage(), e);
             }
         }
     }
@@ -79,20 +78,20 @@ public class StockDataAggregationScheduler {
     @Scheduled(cron = "0 0 0 1 * *")
     @Transactional
     public void aggregateMonthlyDataForAllStocks() {
-        List<StockInfo> stockInfoList = stockDataLoadService.getNotClosedStockInfoList();
+        List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
         YearMonth currentMonth = YearMonth.now();
 
-        for (StockInfo stockInfo : stockInfoList) {
+        for (String stockCode : stockCodeList) {
             try {
                 monthlyAggregationService.aggregateMonthlyData(
-                        stockInfo.getStockCode(),
+                        stockCode,
                         currentMonth
                 );
                 log.info("[Monthly Aggregation 성공] 주식코드: {}, 기준 연월: {}",
-                        stockInfo.getStockCode(), currentMonth);
+                        stockCode, currentMonth);
             } catch (Exception e) {
                 log.error("[Monthly Aggregation 실패] 주식코드: {}, 기준 연월: {}. 에러: {}",
-                        stockInfo.getStockCode(), currentMonth, e.getMessage(), e);
+                        stockCode, currentMonth, e.getMessage(), e);
             }
         }
     }
