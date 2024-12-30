@@ -1,8 +1,6 @@
 package com.port90.core.comment.infrastructure.impl.repository.persistence;
 
 import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.CommentEntity;
-import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.QUserCommentEntity;
-import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.UserCommentEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +9,11 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import static com.port90.core.comment.infrastructure.impl.repository.persistence.entity.QCommentEntity.commentEntity;
-import static com.querydsl.jpa.JPAExpressions.treat;
 
 @Repository
 @RequiredArgsConstructor
@@ -23,7 +21,7 @@ public class CommentQueryRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
-    public List<CommentEntity> findCommentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<CommentEntity> findByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
                 .where(stockCodeEq(stockCode), parentIdIsNull(), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())
@@ -31,15 +29,40 @@ public class CommentQueryRepository {
                 .fetch();
     }
 
-    public List<CommentEntity> findCommentsByStockCodeByCursorBetween(String stockCode, Long cursor, int size, LocalDateTime start, LocalDateTime end) {
+    public List<CommentEntity> findByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
-                .where(stockCodeEq(stockCode), parentIdIsNull(), idLessThan(cursor), createdAtBetween(start, end))
+                .where(stockCodeEq(stockCode), dateEq(date), timeEq(time), parentIdIsNull(), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())
                 .limit(size)
                 .fetch();
     }
 
-    public List<CommentEntity> findChildCommentsByParentIdByCursor(Long parentId, Long cursor, int size) {
+
+    public List<CommentEntity> findByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size) {
+        return jpaQueryFactory.selectFrom(commentEntity)
+                .where(stockCodeEq(stockCode), dateEq(date), timeGt(startTime), timeLoe(time), parentIdIsNull(), idLessThan(cursor))
+                .orderBy(commentEntity.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    public List<CommentEntity> findByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size) {
+        return jpaQueryFactory.selectFrom(commentEntity)
+                .where(stockCodeEq(stockCode), dateEq(date), parentIdIsNull(), idLessThan(cursor))
+                .orderBy(commentEntity.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    public List<CommentEntity> findByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startOfWeek, LocalDate endOfWeek, Long cursor, int size) {
+        return jpaQueryFactory.selectFrom(commentEntity)
+                .where(stockCodeEq(stockCode), dateBetween(startOfWeek, endOfWeek), parentIdIsNull(), idLessThan(cursor))
+                .orderBy(commentEntity.id.desc())
+                .limit(size)
+                .fetch();
+    }
+
+    public List<CommentEntity> findByParentIdByCursor(Long parentId, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
                 .where(parentIdEq(parentId), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())
@@ -66,7 +89,27 @@ public class CommentQueryRepository {
     }
 
     private BooleanExpression stockCodeEq(String stockCode) {
-        return stockCode != null ? commentEntity.stockCode.eq(stockCode) : null;
+        return commentEntity.stockCode.eq(stockCode);
+    }
+
+    private BooleanExpression dateEq(LocalDate date) {
+        return commentEntity.date.eq(date);
+    }
+
+    private BooleanExpression dateBetween(LocalDate startOfWeek, LocalDate endOfWeek) {
+        return commentEntity.date.between(startOfWeek, endOfWeek);
+    }
+
+    private BooleanExpression timeEq(LocalTime time) {
+        return commentEntity.time.eq(time);
+    }
+
+    private BooleanExpression timeGt(LocalTime time) {
+        return commentEntity.time.gt(time);
+    }
+
+    private BooleanExpression timeLoe(LocalTime time) {
+        return commentEntity.time.loe(time);
     }
 
     private BooleanExpression parentIdIsNull() {
@@ -77,19 +120,14 @@ public class CommentQueryRepository {
         return cursor != null ? commentEntity.id.lt(cursor) : null;
     }
 
-    private BooleanExpression createdAtBetween(LocalDateTime start, LocalDateTime end) {
-        if (start == null || end == null) {
-            return null;
-        }
-        return commentEntity.createdAt.between(start, end);
-    }
-
     private BooleanExpression parentIdEq(Long parentId) {
-        return parentId != null ? commentEntity.parentId.eq(parentId) : null;
+        return commentEntity.parentId.eq(parentId);
     }
 
     private BooleanExpression userIdEq(Long userId) {
-        return commentEntity.instanceOf(UserCommentEntity.class)
-                .and(treat(commentEntity, QUserCommentEntity.class).userId.eq(userId));
+        if (userId == null) {
+            throw new RuntimeException("UserId is null");
+        }
+        return commentEntity.userId.eq(userId);
     }
 }

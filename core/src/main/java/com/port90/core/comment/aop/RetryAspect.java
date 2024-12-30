@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class RetryAspect {
 
     @Around("@annotation(retry)")
-    public Object retry(final ProceedingJoinPoint joinPoint, Retry retry) throws Throwable {
+    public Object retry(ProceedingJoinPoint joinPoint, Retry retry) throws Throwable {
         for (int i = 0; i < retry.maxRetries(); i++) {
             try {
                 return joinPoint.proceed();
@@ -22,7 +22,7 @@ public class RetryAspect {
                 if (i == retry.maxRetries() - 1) {
                     throw e;
                 }
-                Thread.sleep(retry.retryDelay());
+                Thread.sleep(retry.delay());
             }
         }
         return null;

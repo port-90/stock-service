@@ -2,15 +2,15 @@ package com.port90.stockdomain.infrastructure;
 
 import com.port90.stockdomain.domain.chart.StockChartMinute;
 import com.port90.stockdomain.domain.chart.StockChartMinuteId;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StockChartMinuteRepository extends JpaRepository<StockChartMinute, StockChartMinuteId> {
@@ -31,7 +31,7 @@ public interface StockChartMinuteRepository extends JpaRepository<StockChartMinu
     );
 
     StockChartMinute findFirstByStockCodeEqualsAndDateEqualsAndTimeBefore(String stockCode, LocalDate date,
-            LocalTime time);
+                                                                          LocalTime time);
 
     Optional<StockChartMinute> findFirstByStockCodeOrderByDateDescTimeDesc(String stockCode);
 
@@ -51,4 +51,13 @@ public interface StockChartMinuteRepository extends JpaRepository<StockChartMinu
             @Param("endDate") LocalDate endDate,
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
+
+
+    @Query("""
+            select m from StockChartMinute m
+            where m.stockCode = :stockCode
+            order by m.stockCode desc, m.date desc, m.time desc
+            limit 1
+            """)
+    Optional<StockChartMinute> findFirstByStockCodeOrderByStockCodeAndDateAndTimeDesc(@Param("stockCode") String stockCode);
 }

@@ -11,5 +11,5 @@ public @interface Retry {
 
     int maxRetries() default 100;
 
-    long retryDelay() default 100L;
+    long delay() default 100L;
 }
