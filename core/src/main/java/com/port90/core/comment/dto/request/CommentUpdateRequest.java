@@ -4,10 +4,8 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record UserCommentCreateRequest(
+public record CommentUpdateRequest(
         @NotBlank @Size(max = 300, message = "Content must not exceed 300 characters") String content,
-        @NotBlank String stockCode,
-        @Nullable Long parentId,
-        boolean isAnonymous
+        @Nullable String password
 ) {
 }

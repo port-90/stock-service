@@ -3,10 +3,11 @@ package com.port90.core.comment.presentation;
 import com.port90.core.auth.dto.request.CustomOAuth2User;
 import com.port90.core.comment.application.CommentService;
 import com.port90.core.comment.dto.CommentDto;
-import com.port90.core.comment.dto.request.*;
+import com.port90.core.comment.dto.request.CommentCreateRequest;
+import com.port90.core.comment.dto.request.CommentDeleteRequest;
+import com.port90.core.comment.dto.request.CommentUpdateRequest;
+import com.port90.core.comment.dto.response.CommentCreateResponse;
 import com.port90.core.comment.dto.response.CommentUpdateResponse;
-import com.port90.core.comment.dto.response.GuestCommentCreateResponse;
-import com.port90.core.comment.dto.response.UserCommentCreateResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,55 +27,34 @@ public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping("/users")
-    public UserCommentCreateResponse createUserComment(
+    @PostMapping
+    public CommentCreateResponse createComment(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
-            @RequestBody @Valid UserCommentCreateRequest request
+            @RequestBody @Valid CommentCreateRequest request
     ) {
-        return commentService.createUserComment(oAuth2User.getUserId(), request);
+        Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
+        return commentService.createComment(userId, request);
     }
 
-    @PostMapping("/guests")
-    public GuestCommentCreateResponse createGuestComment(
-            @RequestBody @Valid GuestCommentCreateRequest request
-    ) {
-        return commentService.createGuestComment(request);
-    }
-
-    @PatchMapping("/users/{commentId}")
-    public CommentUpdateResponse updateUserComment(
+    @PatchMapping("/{commentId}")
+    public CommentUpdateResponse updateComment(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
             @PathVariable Long commentId,
-            @RequestBody @Valid UserCommentUpdateRequest request
+            @RequestBody @Valid CommentUpdateRequest request
     ) {
-        return commentService.updateUserComment(oAuth2User.getUserId(), commentId, request);
+        Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
+        return commentService.updateComment(userId, commentId, request);
     }
 
-    @PatchMapping("/guests/{commentId}")
-    public CommentUpdateResponse updateGuestComment(
-            @PathVariable Long commentId,
-            @RequestBody @Valid GuestCommentUpdateRequest request
-    ) {
-        return commentService.updateGuestComment(commentId, request);
-    }
-
-    @DeleteMapping("/users/{commentId}")
-    public ResponseEntity<?> deleteUserComment(
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
-            @PathVariable Long commentId
-    ) {
-        commentService.deleteUserComment(oAuth2User.getUserId(), commentId);
-        return ResponseEntity
-                .ok()
-                .body("delete success");
-    }
-
-    @DeleteMapping("/guests/{commentId}")
-    public ResponseEntity<?> deleteGuestComment(
             @PathVariable Long commentId,
-            @RequestBody @Valid GuestCommentDeleteRequest request
+            @RequestBody @Valid CommentDeleteRequest request
     ) {
-        commentService.deleteGuestComment(commentId, request);
+        Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
+        commentService.deleteComment(userId, commentId, request);
+
         return ResponseEntity
                 .ok()
                 .body("delete success");

@@ -1,24 +1,23 @@
 package com.port90.core.comment.infrastructure.impl.repository.persistence.entity;
 
+import com.port90.core.comment.domain.model.CommentType;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Getter
 @Entity(name = "Comment")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@SuperBuilder
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "type")
-public abstract class CommentEntity {
+@AllArgsConstructor
+@Builder
+public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +27,20 @@ public abstract class CommentEntity {
     private String stockCode;
 
     @Column(nullable = false)
-    private String content;
+    private LocalDate date;
 
-    private String author;
+    @Column(nullable = false)
+    private LocalTime time;
+
+    private Long userId;
+
+    @Enumerated(EnumType.STRING)
+    private CommentType type;
+
+    private String password;
+
+    @Column(nullable = false)
+    private String content;
 
     private Long parentId;
 
