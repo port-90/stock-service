@@ -50,7 +50,7 @@ public class SecurityConfig {
                                 .userService(customOAuth2UserService))
                         .successHandler(customSuccessHandler))
                 .authorizeHttpRequests(auth -> auth             // 경로별 인가 설정
-                        .requestMatchers("/", "/login", "/api/ranks/*", "/comments/guests/**", "/error")
+                        .requestMatchers("/", "/login", "/api/ranks/*", "/stock-charts", "/comments/guests/**", "/error")
                         .permitAll()
                         .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/comments/**"))
                         .permitAll()
