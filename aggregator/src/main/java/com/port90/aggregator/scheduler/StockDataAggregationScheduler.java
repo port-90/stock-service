@@ -53,7 +53,7 @@ public class StockDataAggregationScheduler {
     // 매주 금요일 20:00 실행
     @Scheduled(cron = "0 0 20 * * FRI")
     public void aggregateWeeklyDataForAllStocks() {
-        List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
+        List<String> stockCodeList = stockDataLoadService.getNotClosedStockInfoList();
         LocalDate currentDate = LocalDate.now();
 
         for (String stockCode : stockCodeList) {
@@ -74,7 +74,7 @@ public class StockDataAggregationScheduler {
     // 매월 1일 00:00 실행
     @Scheduled(cron = "0 0 0 1 * *")
     public void aggregateMonthlyDataForAllStocks() {
-        List<String> stockCodeList = stockDataLoadService.getOpenedStockInfoList();
+        List<String> stockCodeList = stockDataLoadService.getNotClosedStockInfoList();
         YearMonth previousMonth = YearMonth.now().minusMonths(1);
 
         for (String stockCode : stockCodeList) {

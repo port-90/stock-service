@@ -25,6 +25,10 @@ public class StockDataLoadService {
         return stockInfoRepository.findCanTradingStockCodes();
     }
 
+    public List<String> getNotClosedStockInfoList() {
+        return stockInfoRepository.findNotClosedStockCodes();
+    }
+
     public List<StockChartMinute> getStockChartMinuteByStockCodeAndDateAndTimeBetween(String stockCode,
             LocalDate specificDate,
             LocalTime startTime,

@@ -17,4 +17,7 @@ public interface StockInfoRepository extends JpaRepository<StockInfo, String> {
     boolean existsByStockCode(String stockCode);
 
     List<StockInfo> findByStatusNot(StockInfoStatus stockInfoStatus);
+
+    @Query("SELECT s.stockCode from StockInfo s where s.status != 'CLOSE'")
+    List<String> findNotClosedStockCodes();
 }
