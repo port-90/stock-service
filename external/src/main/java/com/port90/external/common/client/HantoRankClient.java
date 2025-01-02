@@ -60,7 +60,7 @@ public class HantoRankClient {
         VolumeRankResponse volumeRankResponse = response.getBody();
 
         saveRankResponseAsJson(volumeRankResponse, RankData.RankType.VOLUME);
-        log.info("API 호출 성공 및 데이터 저장 완료: {}", volumeRankResponse);
+        log.info("거래량 순위 API 호출 성공 및 데이터 저장 완료");
 
         return volumeRankResponse;
     }
@@ -105,7 +105,7 @@ public class HantoRankClient {
             RateRankResponse rateRankResponse = response.getBody();
 
             saveRankResponseAsJson(rateRankResponse, rankType);
-            log.info("{} 데이터 저장 성공: {}", rankType, rateRankResponse);
+            log.info("{} 데이터 저장 성공", rankType);
             return rateRankResponse;
         } catch (Exception e) {
             log.error("{} 데이터 저장 실패: {}", rankType, e.getMessage());
@@ -143,7 +143,7 @@ public class HantoRankClient {
             MarketCapResponse marketCapResponse = response.getBody();
 
             saveRankResponseAsJson(marketCapResponse, RankData.RankType.MARKET_CAP);
-            log.info("시가총액 상위 데이터 저장 성공: {}", marketCapResponse);
+            log.info("시가총액 상위 데이터 저장 성공");
             return marketCapResponse;
         } catch (Exception e) {
             log.error("시가총액 데이터 저장 실패: {}", e.getMessage());
