@@ -7,6 +7,7 @@ import com.port90.core.auth.oauth2.CustomLogoutSuccessHandler;
 import com.port90.core.auth.oauth2.CustomSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collections;
 
+@Profile("!test")
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
