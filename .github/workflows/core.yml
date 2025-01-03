@@ -1,0 +1,49 @@
+name: Stock Service Core Domain CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - 'core/**'  # core 모듈에 대한 변경
+      - 'stock-domain/**'   # stock-domain 모듈에 대한 변경
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create application-dev.yml
+        run: echo "${{ secrets.CORE_APPLICATION_DEV_YML }}" > ./core/src/main/resources/application-dev.yml
+
+      - name: Build Docker Image
+        run: docker build -t stock-service-core -f core/Dockerfile .
+
+      - name: Tag Docker Image
+        run: docker tag stock-service-core:latest ${{ secrets.CORE_DOCKERHUB_USERNAME }}/stock-service-core:latest
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.CORE_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.CORE_DOCKERHUB_TOKEN }}
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.CORE_DOCKERHUB_USERNAME }}/stock-service-core:latest
+
+      - name: Connect to EC2 and Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.CORE_EC2_HOST }}
+          username: ${{ secrets.CORE_EC2_USERNAME }}
+          key: ${{ secrets.CORE_EC2_PRIVATE_KEY }}
+          script_stop: true
+          script: |
+            echo "${{ secrets.CORE_DOCKERHUB_TOKEN }}" | docker login --username ${{ secrets.CORE_DOCKERHUB_USERNAME }} --password-stdin
+            docker pull ${{ secrets.CORE_DOCKERHUB_USERNAME }}/stock-service-core:latest
+            docker stop stock-service-core || true
+            docker rm stock-service-core || true
+            docker-compose up -d
+            docker logout
