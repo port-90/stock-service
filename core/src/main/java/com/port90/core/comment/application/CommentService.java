@@ -5,6 +5,7 @@ import com.port90.core.auth.infrastructure.UserRepository;
 import com.port90.core.comment.aop.Retry;
 import com.port90.core.comment.domain.exception.CommentException;
 import com.port90.core.comment.domain.model.Comment;
+import com.port90.core.comment.dto.ChildCommentCountDto;
 import com.port90.core.comment.dto.CommentDto;
 import com.port90.core.comment.dto.request.CommentCreateRequest;
 import com.port90.core.comment.dto.request.CommentDeleteRequest;
@@ -57,7 +58,7 @@ public class CommentService {
     }
 
     public CommentUpdateResponse updateComment(Long userId, Long commentId, CommentUpdateRequest request) {
-        Comment comment = commentRepository.findById(commentId);
+        Comment comment = commentRepository.getById(commentId);
 
         validateComment(userId, request.password(), comment);
 
@@ -72,7 +73,7 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long userId, Long commentId, CommentDeleteRequest request) {
-        Comment comment = commentRepository.findById(commentId);
+        Comment comment = commentRepository.getById(commentId);
 
         validateComment(userId, request.password(), comment);
 
@@ -89,26 +90,26 @@ public class CommentService {
     }
 
     public List<CommentDto> getCommentList(String stockCode, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findByStockCodeByCursor(stockCode, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeByCursor(stockCode, cursor, size);
 
         return getCommentDtos(comments);
     }
 
     public List<CommentDto> getCommentListByMinute(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size);
 
         return getCommentDtos(comments);
     }
 
     public List<CommentDto> getCommentListByHour(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
         LocalTime startTime = time.minusHours(1);
-        List<Comment> comments = commentRepository.findByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size);
 
         return getCommentDtos(comments);
     }
 
     public List<CommentDto> getCommentListByDaily(String stockCode, LocalDate date, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findByStockCodeAndDateByCursor(stockCode, date, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeAndDateByCursor(stockCode, date, cursor, size);
 
         return getCommentDtos(comments);
     }
@@ -116,7 +117,7 @@ public class CommentService {
     public List<CommentDto> getCommentListByWeek(String stockCode, LocalDate date, Long cursor, int size) {
         LocalDate startOfWeek = date.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = date.with(DayOfWeek.SUNDAY);
-        List<Comment> comments = commentRepository.findByStockCodeAndDateBetweenByCursor(stockCode, startOfWeek, endOfWeek, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeAndDateBetweenByCursor(stockCode, startOfWeek, endOfWeek, cursor, size);
 
         return getCommentDtos(comments);
     }
@@ -126,27 +127,27 @@ public class CommentService {
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
 
-        List<Comment> comments = commentRepository.findByStockCodeAndDateBetweenByCursor(stockCode, startOfMonth, endOfMonth, cursor, size);
+        List<Comment> comments = commentRepository.findAllByStockCodeAndDateBetweenByCursor(stockCode, startOfMonth, endOfMonth, cursor, size);
 
         return getCommentDtos(comments);
     }
 
     public List<CommentDto> getChildCommentList(Long parentId, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findByParentIdByCursor(parentId, cursor, size);
+        List<Comment> comments = commentRepository.findAllByParentIdByCursor(parentId, cursor, size);
 
         return getCommentDtos(comments);
     }
 
     @Retry
     public void increaseLikeCount(Long commentId) {
-        Comment comment = commentRepository.findByIdWithOptimisticLock(commentId);
+        Comment comment = commentRepository.getByIdWithOptimisticLock(commentId);
         comment.increaseLikeCount();
         commentRepository.save(comment);
     }
 
     @Retry
     public void decreaseLikeCount(Long commentId) {
-        Comment comment = commentRepository.findByIdWithOptimisticLock(commentId);
+        Comment comment = commentRepository.getByIdWithOptimisticLock(commentId);
         comment.decreaseLikeCount();
         commentRepository.save(comment);
     }
@@ -181,7 +182,7 @@ public class CommentService {
 
     private void validateParentId(Long parentId, Comment comment) {
         if (parentId != null) {
-            Comment parent = commentRepository.findById(parentId);
+            Comment parent = commentRepository.getById(parentId);
             if (parent.isChild()) {
                 throw new CommentException(PARENT_COMMENT_IS_CHILD_COMMENT);
             }
@@ -211,32 +212,35 @@ public class CommentService {
     }
 
     private void deleteChildComment(Comment comment) {
-        List<Long> childIds = commentRepository.findChildIdsByParentId(comment.getId());
+        List<Long> childIds = commentRepository.findIdsByParentId(comment.getId());
         int count = commentRepository.deleteAllByIdIn(childIds);
         log.info("{}번 댓글에 포함된 자식 댓글 {}개 삭제", comment.getId(), count);
     }
 
     private void updateParentComment(Comment comment) {
-        int count = commentRepository.countByParentId(comment.getParentId());
+        long count = commentRepository.countByParentId(comment.getParentId());
         log.info("{}번 댓글에 포함된 자식 댓글 {}개", comment.getParentId(), count);
         if (count > 1) {
             return;
         }
-        Comment parent = commentRepository.findById(comment.getParentId());
+        Comment parent = commentRepository.getById(comment.getParentId());
         parent.hasNotChild();
         commentRepository.save(parent);
     }
 
     private List<CommentDto> getCommentDtos(List<Comment> comments) {
         Map<Long, String> nameMap = getNameMap(comments);
+        Map<Long, Long> commentCountMap = getCommentCountMap(comments);
 
         return comments.stream()
                 .map(comment -> {
                     if (comment.isUserComment()) {
-                        return CommentDto.from(comment, nameMap.get(comment.getUserId()));
+                        return CommentDto.from(
+                                comment, nameMap.get(comment.getUserId()), commentCountMap.getOrDefault(comment.getId(), 0L)
+                        );
                     }
 
-                    return CommentDto.from(comment, ANONYMOUS_AUTHOR);
+                    return CommentDto.from(comment, ANONYMOUS_AUTHOR, commentCountMap.getOrDefault(comment.getId(), 0L));
                 }).toList();
     }
 
@@ -248,5 +252,16 @@ public class CommentService {
         return userRepository.findAllByIdIn(userIds)
                 .stream()
                 .collect(Collectors.toMap(User::getId, User::getName));
+    }
+
+    private Map<Long, Long> getCommentCountMap(List<Comment> comments) {
+        List<Long> commentIdList = comments.stream()
+                .map(Comment::getId)
+                .toList();
+        return commentRepository.findChildCommentCountsByParentIdIn(commentIdList)
+                .stream()
+                .collect(Collectors.toMap(
+                        ChildCommentCountDto::commentId, ChildCommentCountDto::childCommentCount)
+                );
     }
 }

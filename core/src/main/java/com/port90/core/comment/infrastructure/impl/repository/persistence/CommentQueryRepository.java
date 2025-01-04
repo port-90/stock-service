@@ -1,6 +1,8 @@
 package com.port90.core.comment.infrastructure.impl.repository.persistence;
 
+import com.port90.core.comment.dto.ChildCommentCountDto;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.entity.CommentEntity;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +88,21 @@ public class CommentQueryRepository {
                 .fetchOne();
 
         return new PageImpl<>(comments, pageable, total);
+    }
+
+    public List<ChildCommentCountDto> findChildCommentCountsByParentIdIn(List<Long> commentIdList) {
+        return jpaQueryFactory
+                .select(Projections.constructor(ChildCommentCountDto.class,
+                        commentEntity.parentId, commentEntity.id.count())
+                )
+                .from(commentEntity)
+                .where(parentIdIn(commentIdList))
+                .groupBy(commentEntity.parentId)
+                .fetch();
+    }
+
+    private static BooleanExpression parentIdIn(List<Long> commentIdList) {
+        return commentEntity.parentId.in(commentIdList);
     }
 
     private BooleanExpression stockCodeEq(String stockCode) {

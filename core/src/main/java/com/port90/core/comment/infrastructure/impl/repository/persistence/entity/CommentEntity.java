@@ -39,7 +39,7 @@ public class CommentEntity {
 
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 300)
     private String content;
 
     private Long parentId;
