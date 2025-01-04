@@ -27,5 +27,5 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
     @Query("select c from Comment c where c.id = :commentId")
     Optional<CommentEntity> findByIdWithOptimisticLock(@RequestParam("commentId") Long commentId);
 
-    int countByParentId(Long parentId);
+    long countByParentId(Long parentId);
 }

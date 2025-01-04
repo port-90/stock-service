@@ -9,19 +9,19 @@ public record CommentDto(
         String stockCode,
         String author,
         String content,
+        long childCommentCount,
         int likeCount,
-        boolean isParent,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public static CommentDto from(Comment comment, String author) {
+    public static CommentDto from(Comment comment, String author, long childCommentCount) {
         return new CommentDto(
                 comment.getId(),
                 comment.getStockCode(),
                 author,
                 comment.getContent(),
+                childCommentCount,
                 comment.getLikeCount(),
-                comment.isParent(),
                 comment.getCreatedAt(),
                 comment.getUpdatedAt()
         );
