@@ -19,7 +19,7 @@ public class MyController {
     @GetMapping("/")
     public String mainRoute() {
 
-        return "main";
+        return "main1";
     }
 
     @GetMapping("/my/comments")
