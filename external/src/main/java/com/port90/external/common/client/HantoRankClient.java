@@ -86,7 +86,7 @@ public class HantoRankClient {
                 .queryParam("fid_input_iscd", "0000") // 전체 종목
                 .queryParam("fid_rank_sort_cls_code", rankSortCode) // 순위 정렬 구분 코드 (0: 상승률, 1: 하락률 등)
                 .queryParam("fid_input_cnt_1", "0") // 전체 누적일수
-                .queryParam("fid_prc_cls_code", "0") // 가격 구분 코드 (저가대비/고가대비)
+                .queryParam("fid_prc_cls_code", "1") // 가격 구분 코드 (종가 대비)
                 .queryParam("fid_input_price_1", "") // 전체 가격 (~가격)
                 .queryParam("fid_input_price_2", "") // 전체 가격 (~가격)
                 .queryParam("fid_vol_cnt", "") // 전체 거래량 (~거래량)
