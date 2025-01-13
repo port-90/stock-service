@@ -1,9 +1,6 @@
 package com.port90.stockdomain.domain.info;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +19,7 @@ import java.time.LocalDateTime;
 public class StockInfo {
     @Id
     private String stockCode;
+    @Column(unique = true)
     private String stockName;
     private long stockCount; // 상장주식수
     private long marketCap; // 시가총액
