@@ -13,8 +13,8 @@ public class RateRank {
     @JsonProperty("hts_kor_isnm")
     private String htsKorIsnm; // 종목명
 
-    @JsonProperty("mksc_shrn_iscd")
-    private String mkscShrnIscd; // 종목 코드
+    @JsonProperty("stck_shrn_iscd")
+    private String stckShrnIscd; // 종목 코드
 
     @JsonProperty("data_rank")
     private String dataRank; // 데이터 순위

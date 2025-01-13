@@ -98,7 +98,7 @@ public class HantoRankClient {
     }
 
     private RateRankResponse fetchAndSaveRateRankData(HantoCredential hantoCredential, String url, RankData.RankType rankType) {
-        HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01720000");
+        HttpHeaders headers = buildHeaders(hantoCredential, "FHPST01700000");
 
         try {
             ResponseEntity<RateRankResponse> response = apiService.getForObject(url, headers, RateRankResponse.class);
