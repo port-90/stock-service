@@ -1,4 +1,4 @@
-package com.port90.core.common.config;
+package com.port90.stockdomain.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
