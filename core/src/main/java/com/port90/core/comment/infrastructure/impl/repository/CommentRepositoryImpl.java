@@ -59,7 +59,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByStockCodeByCursor(String stockCode, Long cursor, int size) {
+    public List<Comment> findParentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return commentQueryRepository
                 .findByStockCodeByCursor(stockCode, cursor, size)
                 .stream()
@@ -68,7 +68,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByParentIdByCursor(Long parentId, Long cursor, int size) {
+    public List<Comment> findChildrenByParentIdByCursor(Long parentId, Long cursor, int size) {
         return commentQueryRepository
                 .findByParentIdByCursor(parentId, cursor, size)
                 .stream()
@@ -88,7 +88,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+    public List<Comment> findParentsByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
         return commentQueryRepository.findByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
@@ -101,7 +101,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size) {
+    public List<Comment> findParentsByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size) {
         return commentQueryRepository
                 .findByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size)
                 .stream()
@@ -110,7 +110,7 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size) {
+    public List<Comment> findParentsByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size) {
         return commentQueryRepository
                 .findByStockCodeAndDateByCursor(stockCode, date, cursor, size)
                 .stream()
@@ -119,16 +119,16 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findAllByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startOfWeek, LocalDate endOfWeek, Long cursor, int size) {
+    public List<Comment> findParentsByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size) {
         return commentQueryRepository
-                .findByStockCodeAndDateBetweenByCursor(stockCode, startOfWeek, endOfWeek, cursor, size)
+                .findByStockCodeAndDateBetweenByCursor(stockCode, startDate, endDate, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
     }
 
     @Override
-    public List<ChildCommentCountDto> findChildCommentCountsByParentIdIn(List<Long> commentIdList) {
+    public List<ChildCommentCountDto> findChildCountsByParentIdIn(List<Long> commentIdList) {
         return commentQueryRepository.findChildCommentCountsByParentIdIn(commentIdList);
     }
 }

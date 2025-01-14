@@ -61,73 +61,73 @@ public class CommentController {
     }
 
     @GetMapping
-    public List<CommentDto> getCommentList(
+    public List<CommentDto> getParentsByStockCode(
             @RequestParam String stockCode,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentList(stockCode, cursor, size);
+        return commentService.getParentsByStockCode(stockCode, cursor, size);
     }
 
     @GetMapping("/minute")
-    public List<CommentDto> getCommentListByMinute(
+    public List<CommentDto> getParentsByStockChartMinute(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam LocalTime time,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentListByMinute(stockCode, date, time, cursor, size);
+        return commentService.getParentsByStockChartMinute(stockCode, date, time, cursor, size);
     }
 
     @GetMapping("/hourly")
-    public List<CommentDto> getCommentListByHour(
+    public List<CommentDto> getParentsByStockChartHourly(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam LocalTime time,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentListByHour(stockCode, date, time, cursor, size);
+        return commentService.getParentsByStockChartHourly(stockCode, date, time, cursor, size);
     }
 
     @GetMapping("/daily")
-    public List<CommentDto> getCommentListByDaily(
+    public List<CommentDto> getParentsByStockChartDaily(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentListByDaily(stockCode, date, cursor, size);
+        return commentService.getParentsByStockChartDaily(stockCode, date, cursor, size);
     }
 
     @GetMapping("/weekly")
-    public List<CommentDto> getCommentListByWeek(
+    public List<CommentDto> getParentsByStockChartWeekly(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentListByWeek(stockCode, date, cursor, size);
+        return commentService.getParentsByStockChartWeekly(stockCode, date, cursor, size);
     }
 
     @GetMapping("/monthly")
-    public List<CommentDto> getCommentListByMonth(
+    public List<CommentDto> getParentsByStockChartMonthly(
             @RequestParam String stockCode,
             @RequestParam Integer year,
             @RequestParam Integer month,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getCommentListByMonth(stockCode, year, month, cursor, size);
+        return commentService.getParentsByStockChartMonthly(stockCode, year, month, cursor, size);
     }
 
     @GetMapping("/{parentId}")
-    public List<CommentDto> getChildCommentList(
+    public List<CommentDto> getChildrenByParentId(
             @PathVariable Long parentId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "5") int size
     ) {
-        return commentService.getChildCommentList(parentId, cursor, size);
+        return commentService.getChildrenByParentId(parentId, cursor, size);
     }
 }
