@@ -56,9 +56,9 @@ public class CommentQueryRepository {
                 .fetch();
     }
 
-    public List<CommentEntity> findByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startOfWeek, LocalDate endOfWeek, Long cursor, int size) {
+    public List<CommentEntity> findByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size) {
         return jpaQueryFactory.selectFrom(commentEntity)
-                .where(stockCodeEq(stockCode), dateBetween(startOfWeek, endOfWeek), parentIdIsNull(), idLessThan(cursor))
+                .where(stockCodeEq(stockCode), dateBetween(startDate, endDate), parentIdIsNull(), idLessThan(cursor))
                 .orderBy(commentEntity.id.desc())
                 .limit(size)
                 .fetch();

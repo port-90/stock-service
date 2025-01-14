@@ -89,51 +89,51 @@ public class CommentService {
         log.info("Comment Deleted, ID: {}", comment.getId());
     }
 
-    public List<CommentDto> getCommentList(String stockCode, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findAllByStockCodeByCursor(stockCode, cursor, size);
+    public List<CommentDto> getParentsByStockCode(String stockCode, Long cursor, int size) {
+        List<Comment> comments = commentRepository.findParentsByStockCodeByCursor(stockCode, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getCommentListByMinute(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findAllByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size);
+    public List<CommentDto> getParentsByStockChartMinute(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+        List<Comment> comments = commentRepository.findParentsByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getCommentListByHour(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+    public List<CommentDto> getParentsByStockChartHourly(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
         LocalTime startTime = time.minusHours(1);
-        List<Comment> comments = commentRepository.findAllByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size);
+        List<Comment> comments = commentRepository.findParentsByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getCommentListByDaily(String stockCode, LocalDate date, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findAllByStockCodeAndDateByCursor(stockCode, date, cursor, size);
+    public List<CommentDto> getParentsByStockChartDaily(String stockCode, LocalDate date, Long cursor, int size) {
+        List<Comment> comments = commentRepository.findParentsByStockCodeAndDateByCursor(stockCode, date, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getCommentListByWeek(String stockCode, LocalDate date, Long cursor, int size) {
+    public List<CommentDto> getParentsByStockChartWeekly(String stockCode, LocalDate date, Long cursor, int size) {
         LocalDate startOfWeek = date.with(DayOfWeek.MONDAY);
         LocalDate endOfWeek = date.with(DayOfWeek.SUNDAY);
-        List<Comment> comments = commentRepository.findAllByStockCodeAndDateBetweenByCursor(stockCode, startOfWeek, endOfWeek, cursor, size);
+        List<Comment> comments = commentRepository.findParentsByStockCodeAndDateBetweenByCursor(stockCode, startOfWeek, endOfWeek, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getCommentListByMonth(String stockCode, Integer year, Integer month, Long cursor, int size) {
+    public List<CommentDto> getParentsByStockChartMonthly(String stockCode, Integer year, Integer month, Long cursor, int size) {
         YearMonth yearMonth = YearMonth.of(year, month);
         LocalDate startOfMonth = yearMonth.atDay(1);
         LocalDate endOfMonth = yearMonth.atEndOfMonth();
 
-        List<Comment> comments = commentRepository.findAllByStockCodeAndDateBetweenByCursor(stockCode, startOfMonth, endOfMonth, cursor, size);
+        List<Comment> comments = commentRepository.findParentsByStockCodeAndDateBetweenByCursor(stockCode, startOfMonth, endOfMonth, cursor, size);
 
         return getCommentDtos(comments);
     }
 
-    public List<CommentDto> getChildCommentList(Long parentId, Long cursor, int size) {
-        List<Comment> comments = commentRepository.findAllByParentIdByCursor(parentId, cursor, size);
+    public List<CommentDto> getChildrenByParentId(Long parentId, Long cursor, int size) {
+        List<Comment> comments = commentRepository.findChildrenByParentIdByCursor(parentId, cursor, size);
 
         return getCommentDtos(comments);
     }
@@ -258,7 +258,7 @@ public class CommentService {
         List<Long> commentIdList = comments.stream()
                 .map(Comment::getId)
                 .toList();
-        return commentRepository.findChildCommentCountsByParentIdIn(commentIdList)
+        return commentRepository.findChildCountsByParentIdIn(commentIdList)
                 .stream()
                 .collect(Collectors.toMap(
                         ChildCommentCountDto::commentId, ChildCommentCountDto::childCommentCount)

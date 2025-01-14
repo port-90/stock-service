@@ -20,23 +20,23 @@ public interface CommentRepository {
 
     int deleteAllByIdIn(List<Long> commentIds);
 
-    List<Comment> findAllByStockCodeByCursor(String stockCode, Long cursor, int size);
-
-    List<Comment> findAllByParentIdByCursor(Long parentId, Long cursor, int size);
+    List<Comment> findChildrenByParentIdByCursor(Long parentId, Long cursor, int size);
 
     void delete(Comment comment);
 
     Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable); // 페이징 지원
 
-    List<Comment> findAllByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size);
-
     long countByParentId(Long parentId);
 
-    List<Comment> findAllByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size);
+    List<Comment> findParentsByStockCodeByCursor(String stockCode, Long cursor, int size);
 
-    List<Comment> findAllByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size);
+    List<Comment> findParentsByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size);
 
-    List<Comment> findAllByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startOfWeek, LocalDate endOfWeek, Long cursor, int size);
+    List<Comment> findParentsByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size);
 
-    List<ChildCommentCountDto> findChildCommentCountsByParentIdIn(List<Long> commentIdList);
+    List<Comment> findParentsByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size);
+
+    List<Comment> findParentsByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size);
+
+    List<ChildCommentCountDto> findChildCountsByParentIdIn(List<Long> commentIdList);
 }
