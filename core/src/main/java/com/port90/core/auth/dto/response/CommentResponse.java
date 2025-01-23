@@ -11,7 +11,7 @@ public class CommentResponse {
     private Long commentId;
     private String stockCode;
     private String content;
-    private int likeCount;
+    private Long likeCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

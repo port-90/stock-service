@@ -1,8 +1,7 @@
 package com.port90.core.comment.infrastructure.impl.repository;
 
-import com.port90.core.comment.domain.exception.CommentException;
+import com.port90.core.comment.domain.error.CommentException;
 import com.port90.core.comment.domain.model.Comment;
-import com.port90.core.comment.dto.ChildCommentCountDto;
 import com.port90.core.comment.infrastructure.CommentRepository;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.CommentJpaRepository;
 import com.port90.core.comment.infrastructure.impl.repository.persistence.CommentQueryRepository;
@@ -16,7 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static com.port90.core.comment.domain.exception.CommentErrorCode.COMMENT_NOT_FOUND;
+import static com.port90.core.comment.domain.error.CommentErrorCode.COMMENT_NOT_FOUND_BY_ID;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,45 +34,12 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public Comment getById(Long commentId) {
-        return commentJpaRepository.findById(commentId)
-                .map(CommentMapper::toModel)
-                .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND));
-    }
-
-    @Override
-    public Comment getByIdWithOptimisticLock(Long commentId) {
-        return commentJpaRepository.findByIdWithOptimisticLock(commentId)
-                .map(CommentMapper::toModel)
-                .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND));
-    }
-
-    @Override
-    public List<Long> findIdsByParentId(Long parentId) {
-        return commentJpaRepository.findChildIdsByParentId(parentId);
-    }
-
-    @Override
-    public int deleteAllByIdIn(List<Long> commentIds) {
-        return commentJpaRepository.deleteAllByIdIn(commentIds);
-    }
-
-    @Override
-    public List<Comment> findParentsByStockCodeByCursor(String stockCode, Long cursor, int size) {
-        return commentQueryRepository
-                .findByStockCodeByCursor(stockCode, cursor, size)
-                .stream()
-                .map(CommentMapper::toModel)
-                .toList();
-    }
-
-    @Override
-    public List<Comment> findChildrenByParentIdByCursor(Long parentId, Long cursor, int size) {
-        return commentQueryRepository
-                .findByParentIdByCursor(parentId, cursor, size)
-                .stream()
-                .map(CommentMapper::toModel)
-                .toList();
+    public Comment saveAndFlush(Comment comment) {
+        return CommentMapper.toModel(
+                commentJpaRepository.saveAndFlush(
+                        CommentMapper.toEntity(comment)
+                )
+        );
     }
 
     @Override
@@ -82,53 +48,64 @@ public class CommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable) {
-        return commentQueryRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable)
+    public boolean existsById(Long commentId) {
+        return commentJpaRepository.existsById(commentId);
+    }
+
+    @Override
+    public Comment getById(Long commentId) {
+        return commentJpaRepository.findById(commentId)
+                .map(CommentMapper::toModel)
+                .orElseThrow(() -> new CommentException(COMMENT_NOT_FOUND_BY_ID, commentId));
+    }
+
+    @Override
+    public Page<Comment> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable) {
+        return commentJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable)
                 .map(CommentMapper::toModel);
     }
 
     @Override
-    public List<Comment> findParentsByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
-        return commentQueryRepository.findByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size)
-                .stream()
-                .map(CommentMapper::toModel)
-                .toList();
-    }
-
-    @Override
-    public long countByParentId(Long parentId) {
-        return commentJpaRepository.countByParentId(parentId);
-    }
-
-    @Override
-    public List<Comment> findParentsByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size) {
+    public List<Comment> findAllByStockCodeByCursor(String stockCode, Long cursor, int size) {
         return commentQueryRepository
-                .findByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, time, cursor, size)
+                .findAllByStockCodeByCursor(stockCode, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
     }
 
     @Override
-    public List<Comment> findParentsByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size) {
+    public List<Comment> findAllByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size) {
+        return commentQueryRepository.findAllByStockCodeAndDateAndTimeByCursor(stockCode, date, time, cursor, size)
+                .stream()
+                .map(CommentMapper::toModel)
+                .toList();
+    }
+
+    @Override
+    public List<Comment> findAllByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime endTime, Long cursor, int size) {
         return commentQueryRepository
-                .findByStockCodeAndDateByCursor(stockCode, date, cursor, size)
+                .findAllByStockCodeAndDateAndTimeBetweenByCursor(stockCode, date, startTime, endTime, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
     }
 
     @Override
-    public List<Comment> findParentsByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size) {
+    public List<Comment> findAllByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size) {
         return commentQueryRepository
-                .findByStockCodeAndDateBetweenByCursor(stockCode, startDate, endDate, cursor, size)
+                .findAllByStockCodeAndDateByCursor(stockCode, date, cursor, size)
                 .stream()
                 .map(CommentMapper::toModel)
                 .toList();
     }
 
     @Override
-    public List<ChildCommentCountDto> findChildCountsByParentIdIn(List<Long> commentIdList) {
-        return commentQueryRepository.findChildCommentCountsByParentIdIn(commentIdList);
+    public List<Comment> findAllByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size) {
+        return commentQueryRepository
+                .findAllByStockCodeAndDateBetweenByCursor(stockCode, startDate, endDate, cursor, size)
+                .stream()
+                .map(CommentMapper::toModel)
+                .toList();
     }
 }

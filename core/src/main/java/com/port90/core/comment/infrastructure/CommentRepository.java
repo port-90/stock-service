@@ -1,7 +1,6 @@
 package com.port90.core.comment.infrastructure;
 
 import com.port90.core.comment.domain.model.Comment;
-import com.port90.core.comment.dto.ChildCommentCountDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,31 +11,23 @@ import java.util.List;
 public interface CommentRepository {
     Comment save(Comment comment);
 
-    Comment getById(Long commentId);
-
-    Comment getByIdWithOptimisticLock(Long commentId);
-
-    List<Long> findIdsByParentId(Long parentId);
-
-    int deleteAllByIdIn(List<Long> commentIds);
-
-    List<Comment> findChildrenByParentIdByCursor(Long parentId, Long cursor, int size);
+    Comment saveAndFlush(Comment comment);
 
     void delete(Comment comment);
 
-    Page<Comment> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable); // 페이징 지원
+    boolean existsById(Long commentId);
 
-    long countByParentId(Long parentId);
+    Comment getById(Long commentId);
 
-    List<Comment> findParentsByStockCodeByCursor(String stockCode, Long cursor, int size);
+    Page<Comment> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable); // 페이징 지원
 
-    List<Comment> findParentsByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size);
+    List<Comment> findAllByStockCodeByCursor(String stockCode, Long cursor, int size);
 
-    List<Comment> findParentsByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime time, Long cursor, int size);
+    List<Comment> findAllByStockCodeAndDateAndTimeByCursor(String stockCode, LocalDate date, LocalTime time, Long cursor, int size);
 
-    List<Comment> findParentsByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size);
+    List<Comment> findAllByStockCodeAndDateAndTimeBetweenByCursor(String stockCode, LocalDate date, LocalTime startTime, LocalTime endTime, Long cursor, int size);
 
-    List<Comment> findParentsByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size);
+    List<Comment> findAllByStockCodeAndDateByCursor(String stockCode, LocalDate date, Long cursor, int size);
 
-    List<ChildCommentCountDto> findChildCountsByParentIdIn(List<Long> commentIdList);
+    List<Comment> findAllByStockCodeAndDateBetweenByCursor(String stockCode, LocalDate startDate, LocalDate endDate, Long cursor, int size);
 }

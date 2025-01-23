@@ -2,12 +2,13 @@ package com.port90.core.comment.presentation;
 
 import com.port90.core.auth.dto.request.CustomOAuth2User;
 import com.port90.core.comment.application.CommentService;
-import com.port90.core.comment.dto.CommentDto;
-import com.port90.core.comment.dto.request.CommentCreateRequest;
-import com.port90.core.comment.dto.request.CommentDeleteRequest;
-import com.port90.core.comment.dto.request.CommentUpdateRequest;
-import com.port90.core.comment.dto.response.CommentCreateResponse;
-import com.port90.core.comment.dto.response.CommentUpdateResponse;
+import com.port90.core.comment.domain.model.CommentDelete;
+import com.port90.core.comment.presentation.request.CommentCreateRequest;
+import com.port90.core.comment.presentation.request.CommentDeleteRequest;
+import com.port90.core.comment.presentation.request.CommentUpdateRequest;
+import com.port90.core.comment.presentation.response.CommentCreateResponse;
+import com.port90.core.comment.presentation.response.CommentResponse;
+import com.port90.core.comment.presentation.response.CommentUpdateResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,32 +29,37 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public CommentCreateResponse createComment(
+    public CommentCreateResponse create(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
             @RequestBody @Valid CommentCreateRequest request
     ) {
         Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
-        return commentService.createComment(userId, request);
+        return CommentCreateResponse.from(
+                commentService.create(request.toCommand(userId))
+        );
     }
 
     @PatchMapping("/{commentId}")
-    public CommentUpdateResponse updateComment(
+    public CommentUpdateResponse update(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
             @PathVariable Long commentId,
             @RequestBody @Valid CommentUpdateRequest request
     ) {
         Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
-        return commentService.updateComment(userId, commentId, request);
+        return CommentUpdateResponse.from(
+                commentService.update(request.toCommand(userId, commentId))
+        );
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(
             @AuthenticationPrincipal CustomOAuth2User oAuth2User,
             @PathVariable Long commentId,
-            @RequestBody @Valid CommentDeleteRequest request
+            @RequestBody(required = false) @Valid CommentDeleteRequest request
     ) {
         Long userId = oAuth2User != null ? oAuth2User.getUserId() : null;
-        commentService.deleteComment(userId, commentId, request);
+        CommentDelete commentDelete = buildCommentDeleteCommand(commentId, request, userId);
+        commentService.delete(commentDelete);
 
         return ResponseEntity
                 .ok()
@@ -61,73 +67,86 @@ public class CommentController {
     }
 
     @GetMapping
-    public List<CommentDto> getParentsByStockCode(
+    public List<CommentResponse> getListByStockCode(
             @RequestParam String stockCode,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockCode(stockCode, cursor, size);
+        return CommentResponse.from(
+                commentService.getListByStockCode(stockCode, cursor, size)
+        );
     }
 
     @GetMapping("/minute")
-    public List<CommentDto> getParentsByStockChartMinute(
+    public List<CommentResponse> getListInStockChartMinute(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam LocalTime time,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockChartMinute(stockCode, date, time, cursor, size);
+        return CommentResponse.from(
+                commentService.getListInStockChartMinute(stockCode, date, time, cursor, size)
+        );
     }
 
     @GetMapping("/hourly")
-    public List<CommentDto> getParentsByStockChartHourly(
+    public List<CommentResponse> getListInStockChartHourly(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam LocalTime time,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockChartHourly(stockCode, date, time, cursor, size);
+        return CommentResponse.from(
+                commentService.getListInStockChartHourly(stockCode, date, time, cursor, size)
+        );
     }
 
     @GetMapping("/daily")
-    public List<CommentDto> getParentsByStockChartDaily(
+    public List<CommentResponse> getListInStockChartDaily(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockChartDaily(stockCode, date, cursor, size);
+        return CommentResponse.from(
+                commentService.getListInStockChartDaily(stockCode, date, cursor, size)
+        );
     }
 
     @GetMapping("/weekly")
-    public List<CommentDto> getParentsByStockChartWeekly(
+    public List<CommentResponse> getListInStockChartWeekly(
             @RequestParam String stockCode,
             @RequestParam LocalDate date,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockChartWeekly(stockCode, date, cursor, size);
+        return CommentResponse.from(
+                commentService.getListInStockChartWeekly(stockCode, date, cursor, size)
+        );
     }
 
     @GetMapping("/monthly")
-    public List<CommentDto> getParentsByStockChartMonthly(
+    public List<CommentResponse> getListInStockChartMonthly(
             @RequestParam String stockCode,
             @RequestParam Integer year,
             @RequestParam Integer month,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return commentService.getParentsByStockChartMonthly(stockCode, year, month, cursor, size);
+        return CommentResponse.from(
+                commentService.getListInStockChartMonthly(stockCode, year, month, cursor, size)
+        );
     }
 
-    @GetMapping("/{parentId}")
-    public List<CommentDto> getChildrenByParentId(
-            @PathVariable Long parentId,
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        return commentService.getChildrenByParentId(parentId, cursor, size);
+    private CommentDelete buildCommentDeleteCommand(Long commentId, CommentDeleteRequest request, Long userId) {
+        if (request == null) {
+            return CommentDelete.builder()
+                    .commentId(commentId)
+                    .userId(userId)
+                    .build();
+        }
+        return request.toCommand(userId, commentId);
     }
 }

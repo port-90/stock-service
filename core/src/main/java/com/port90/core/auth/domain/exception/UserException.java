@@ -10,4 +10,9 @@ public class UserException extends RuntimeException {
         super(errorCode.getMessage());
         this.errorCode = errorCode;
     }
+
+    public UserException(ErrorCode errorCode, Long userId) {
+        super(String.format(errorCode.getMessage(), userId));
+        this.errorCode = errorCode;
+    }
 }
