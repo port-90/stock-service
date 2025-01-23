@@ -6,23 +6,34 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+import static com.port90.core.like.domain.model.LikeTarget.*;
+
 @Getter
 @Builder
 public class Like {
     private Long id;
     private Long userId;
-    private Long commentId;
+    private LikeTarget target;
+    private Long targetId;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-    public static Like create(Long userId, Long commentId) {
+    public static Like create(LikeCreate likeCreate) {
         return Like.builder()
-                .userId(userId)
-                .commentId(commentId)
+                .userId(likeCreate.userId())
+                .target(likeCreate.target())
+                .targetId(likeCreate.targetId())
                 .build();
     }
 
-    public boolean isNotLikedBy(Long userId) {
-        return !Objects.equals(this.userId, userId);
+    public boolean isCommentLike() {
+        return this.target == COMMENT;
+    }
+
+    public boolean isReplyLike() {
+        return this.target == REPLY;
+    }
+
+    public boolean validateUserId(LikeDelete likeDelete) {
+        return !Objects.equals(this.userId, likeDelete.userId());
     }
 }

@@ -17,6 +17,10 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
 }
 
+clean {
+    delete file('src/main/generated')
+}
+
 bootJar {
     enabled = false
 }

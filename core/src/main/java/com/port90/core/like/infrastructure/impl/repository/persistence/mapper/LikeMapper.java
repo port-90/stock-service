@@ -9,9 +9,9 @@ public class LikeMapper {
         return Like.builder()
                 .id(likeEntity.getId())
                 .userId(likeEntity.getUserId())
-                .commentId(likeEntity.getCommentId())
+                .target(likeEntity.getTarget())
+                .targetId(likeEntity.getTargetId())
                 .createdAt(likeEntity.getCreatedAt())
-                .updatedAt(likeEntity.getUpdatedAt())
                 .build();
     }
 
@@ -19,9 +19,9 @@ public class LikeMapper {
         return LikeEntity.builder()
                 .id(like.getId())
                 .userId(like.getUserId())
-                .commentId(like.getCommentId())
+                .target(like.getTarget())
+                .targetId(like.getTargetId())
                 .createdAt(like.getCreatedAt())
-                .updatedAt(like.getUpdatedAt())
                 .build();
     }
 }

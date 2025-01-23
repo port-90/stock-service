@@ -1,13 +1,14 @@
 package com.port90.core.like.infrastructure;
 
 import com.port90.core.like.domain.model.Like;
+import com.port90.core.like.domain.model.LikeTarget;
 
 public interface LikeRepository {
     Like save(Like like);
 
-    boolean existsByUserIdAndCommentId(Long userId, Long commentId);
+    void delete(Like like);
 
-    Like findById(Long likeId);
+    Like getById(Long likeId);
 
-    void deleteById(Long likeId);
+    boolean existsByUserIdAndTargetAndTargetId(Long userId, LikeTarget target, Long targetId);
 }

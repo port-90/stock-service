@@ -1,7 +1,7 @@
 package com.port90.core.stockinfo.presentation;
 
 import com.port90.core.stockinfo.application.StockInfoService;
-import com.port90.core.stockinfo.dto.StockInfoDto;
+import com.port90.core.stockinfo.presentation.response.StockInfoResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,12 +18,14 @@ public class StockInfoController {
     private final StockInfoService stockInfoService;
 
     @GetMapping
-    public List<StockInfoDto> getStockInfosByCondition(
+    public List<StockInfoResponse> getStockInfoListByCondition(
             @RequestParam(required = false) String stockCode,
             @RequestParam(required = false) String stockName,
             @RequestParam(required = false) String cursor,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return stockInfoService.getStockInfosByCondition(stockCode, stockName, cursor, size);
+        return StockInfoResponse.from(
+                stockInfoService.getStockInfoListByCondition(stockCode, stockName, cursor, size)
+        );
     }
 }

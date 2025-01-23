@@ -7,7 +7,7 @@ public record ErrorResponse(
         String message,
         LocalDateTime timestamp
 ) {
-    public static ErrorResponse from(String code, String message) {
+    public static ErrorResponse of(String code, String message) {
         return new ErrorResponse(code, message, LocalDateTime.now());
     }
 

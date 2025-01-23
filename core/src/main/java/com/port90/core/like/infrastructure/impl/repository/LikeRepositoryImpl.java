@@ -1,14 +1,15 @@
 package com.port90.core.like.infrastructure.impl.repository;
 
-import com.port90.core.like.domain.exception.LikeException;
+import com.port90.core.like.domain.error.LikeException;
 import com.port90.core.like.domain.model.Like;
+import com.port90.core.like.domain.model.LikeTarget;
 import com.port90.core.like.infrastructure.LikeRepository;
 import com.port90.core.like.infrastructure.impl.repository.persistence.LikeJpaRepository;
 import com.port90.core.like.infrastructure.impl.repository.persistence.mapper.LikeMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import static com.port90.core.like.domain.exception.LikeErrorCode.LIKE_NOT_FOUND;
+import static com.port90.core.like.domain.error.LikeErrorCode.LIKE_NOT_FOUND_BY_ID;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,19 +27,21 @@ public class LikeRepositoryImpl implements LikeRepository {
     }
 
     @Override
-    public boolean existsByUserIdAndCommentId(Long userId, Long commentId) {
-        return likeJpaRepository.existsByUserIdAndCommentId(userId, commentId);
+    public void delete(Like like) {
+        likeJpaRepository.delete(
+                LikeMapper.toEntity(like)
+        );
     }
 
     @Override
-    public Like findById(Long likeId) {
+    public Like getById(Long likeId) {
         return likeJpaRepository.findById(likeId)
                 .map(LikeMapper::toModel)
-                .orElseThrow(() -> new LikeException(LIKE_NOT_FOUND));
+                .orElseThrow(() -> new LikeException(LIKE_NOT_FOUND_BY_ID, likeId));
     }
 
     @Override
-    public void deleteById(Long likeId) {
-        likeJpaRepository.deleteById(likeId);
+    public boolean existsByUserIdAndTargetAndTargetId(Long userId, LikeTarget target, Long targetId) {
+        return likeJpaRepository.existsByUserIdAndTargetAndTargetId(userId, target, targetId);
     }
 }

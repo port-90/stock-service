@@ -51,13 +51,4 @@ public interface StockChartMinuteRepository extends JpaRepository<StockChartMinu
             @Param("endDate") LocalDate endDate,
             @Param("startTime") LocalTime startTime,
             @Param("endTime") LocalTime endTime);
-
-
-    @Query("""
-            select m from StockChartMinute m
-            where m.stockCode = :stockCode
-            order by m.stockCode desc, m.date desc, m.time desc
-            limit 1
-            """)
-    Optional<StockChartMinute> findFirstByStockCodeOrderByStockCodeAndDateAndTimeDesc(@Param("stockCode") String stockCode);
 }

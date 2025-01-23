@@ -35,6 +35,7 @@ public class CommentEntity {
     private Long userId;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private CommentType type;
 
     private String password;
@@ -42,13 +43,8 @@ public class CommentEntity {
     @Column(nullable = false, length = 300)
     private String content;
 
-    private Long parentId;
-
-    private int likeCount;
-
-    private boolean isParent;
-
-    private boolean isChild;
+    @Column(nullable = false)
+    private Long likeCount;
 
     @CreatedDate
     @Column(updatable = false)

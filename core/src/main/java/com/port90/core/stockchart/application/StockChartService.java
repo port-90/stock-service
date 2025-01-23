@@ -1,19 +1,20 @@
 package com.port90.core.stockchart.application;
 
-import com.port90.core.stockchart.domain.exception.StockChartErrorCode;
+import com.port90.core.stockchart.domain.StockChartMinuteId;
+import com.port90.core.stockchart.domain.exception.StockChartNotFoundException;
 import com.port90.core.stockchart.domain.exception.StockChartTypeException;
 import com.port90.core.stockchart.dto.request.StockChartRequest;
 import com.port90.core.stockchart.dto.response.ChartData;
 import com.port90.core.stockchart.dto.response.StockChartResponse;
-import com.port90.stockdomain.infrastructure.StockChartDailyRepository;
-import com.port90.stockdomain.infrastructure.StockChartHourlyRepository;
-import com.port90.stockdomain.infrastructure.StockChartMinuteRepository;
-import com.port90.stockdomain.infrastructure.StockChartMonthlyRepository;
-import com.port90.stockdomain.infrastructure.StockChartWeeklyRepository;
-import java.time.LocalDate;
-import java.util.List;
+import com.port90.stockdomain.infrastructure.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import static com.port90.core.stockchart.domain.exception.StockChartErrorCode.STOCK_CHART_MINUTE_NOT_FOUND_BY_STOCK_CODE;
+import static com.port90.core.stockchart.domain.exception.StockChartErrorCode.STOCK_CHART_TYPE_NOT_FOUND;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class StockChartService {
             case DAILY -> fetchDailyData(request);
             case WEEKLY -> fetchWeeklyData(request);
             case MONTHLY -> fetchMonthlyData(request);
-            default -> throw new StockChartTypeException(StockChartErrorCode.STOCK_CHART_TYPE_NOT_FOUND);
+            default -> throw new StockChartTypeException(STOCK_CHART_TYPE_NOT_FOUND);
         };
     }
 
@@ -151,5 +152,16 @@ public class StockChartService {
                         entity.getTotalPrice()
                 ))
                 .toList();
+    }
+
+    public StockChartMinuteId getLatestStockChartMinuteIdByStockCode(String stockCode) {
+        return minuteRepository
+                .findFirstByStockCodeOrderByDateDescTimeDesc(stockCode)
+                .map(stockChartMinute -> new StockChartMinuteId(
+                        stockChartMinute.getStockCode(), stockChartMinute.getDate(), stockChartMinute.getTime())
+                )
+                .orElseThrow(
+                        () -> new StockChartNotFoundException(STOCK_CHART_MINUTE_NOT_FOUND_BY_STOCK_CODE, stockCode)
+                );
     }
 }

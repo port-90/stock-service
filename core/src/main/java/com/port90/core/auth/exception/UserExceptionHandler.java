@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
-@RestControllerAdvice(basePackages = "com.port90.core.auth")
+@RestControllerAdvice
 public class UserExceptionHandler {
     @ExceptionHandler(UserException.class)
     public ResponseEntity<?> handleUserException(UserException e) {
@@ -17,7 +17,7 @@ public class UserExceptionHandler {
         log.info("Error Message: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.from(e.getErrorCode().name(), e.getMessage()));
+                .body(ErrorResponse.of(e.getErrorCode().name(), e.getMessage()));
     }
 
     @ExceptionHandler(APIDataException.class)
@@ -25,6 +25,6 @@ public class UserExceptionHandler {
         log.error("API Data Error: {}", e.getMessage());
         return ResponseEntity
                 .status(e.getErrorCode().getStatus())
-                .body(ErrorResponse.from(e.getErrorCode().name(), e.getMessage()));
+                .body(ErrorResponse.of(e.getErrorCode().name(), e.getMessage()));
     }
 }

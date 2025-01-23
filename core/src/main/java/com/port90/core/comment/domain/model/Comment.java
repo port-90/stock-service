@@ -1,105 +1,75 @@
 package com.port90.core.comment.domain.model;
 
-import com.port90.core.like.domain.exception.LikeException;
+import com.port90.core.comment.domain.error.CommentException;
+import com.port90.core.stockchart.domain.StockChartMinuteId;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.Objects;
 
+import static com.port90.core.comment.domain.error.CommentErrorCode.COMMENT_LIKE_CAN_NOT_BE_LESS_THAN_ZERO;
+import static com.port90.core.comment.domain.error.CommentErrorCode.COMMENT_USER_MISMATCH;
 import static com.port90.core.comment.domain.model.CommentType.*;
-import static com.port90.core.like.domain.exception.LikeErrorCode.LIKE_CAN_NOT_BE_LESS_THAN_ZERO;
 
 @Getter
 @Builder
 public class Comment {
 
     private Long id;
-    private String stockCode;
-    private LocalDate date;
-    private LocalTime time;
+    private StockChartMinuteId stockChartMinuteId;
     private Long userId;
+
     private CommentType type;
     private String password;
+
     private String content;
-    private Long parentId;
-    private int likeCount;
-    private boolean isParent;
-    private boolean isChild;
+    private Long likeCount;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long version;
 
-    public static Comment createUserComment(
-            String stockCode, LocalDate date, LocalTime time, Long userId, String content, Long parentId
-    ) {
+    public static Comment createUnAuthenticated(CommentCreate commentCreate, CommentType type, String password, StockChartMinuteId stockChartMinuteId) {
         return Comment.builder()
-                .stockCode(stockCode)
-                .date(date)
-                .time(time)
-                .userId(userId)
-                .type(USER)
-                .content(content)
-                .parentId(parentId)
-                .build();
-    }
-
-    public static Comment createAnonymousUserComment(
-            String stockCode, LocalDate date, LocalTime time, Long userId, String content, Long parentId
-    ) {
-        return Comment.builder()
-                .stockCode(stockCode)
-                .date(date)
-                .time(time)
-                .userId(userId)
-                .type(ANONYMOUS_USER)
-                .content(content)
-                .parentId(parentId)
-                .build();
-    }
-
-    public static Comment createGuestComment(
-            String stockCode, LocalDate date, LocalTime time, String content, Long parentId, String password
-    ) {
-        return Comment.builder()
-                .stockCode(stockCode)
-                .date(date)
-                .time(time)
-                .type(GUEST)
-                .content(content)
-                .parentId(parentId)
+                .stockChartMinuteId(stockChartMinuteId)
+                .type(type)
                 .password(password)
+                .content(commentCreate.content())
+                .likeCount(0L)
                 .build();
     }
 
-    public void hasChild() {
-        this.isParent = true;
+    public static Comment createAuthenticated(CommentCreate commentCreate, CommentType type, StockChartMinuteId stockChartMinuteId) {
+        return Comment.builder()
+                .stockChartMinuteId(stockChartMinuteId)
+                .userId(commentCreate.userId())
+                .type(type)
+                .content(commentCreate.content())
+                .likeCount(0L)
+                .build();
     }
 
-    public void hasParent() {
-        this.isChild = true;
+    public boolean isUnauthenticated() {
+        return this.type == UNAUTHENTICATED;
     }
 
-    public boolean isNotWrittenBy(Long userId) {
-        return !Objects.equals(this.userId, userId);
+    public boolean isAuthenticated() {
+        return this.type == AUTHENTICATED;
     }
 
-    public boolean isGuestComment() {
-        return this.type == GUEST;
+    public boolean isAuthenticatedAnonymous() {
+        return this.type == AUTHENTICATED_ANONYMOUS;
     }
 
-    public void updateContent(String content) {
-        this.content = content;
+    public void validateUserId(Long userId) {
+        if (!Objects.equals(this.userId, userId)) {
+            throw new CommentException(COMMENT_USER_MISMATCH);
+        }
     }
 
-    public void hasNotChild() {
-        this.isParent = false;
-    }
-
-    public boolean isUserComment() {
-        return this.type == USER;
+    public void updateContent(CommentUpdate commentUpdate) {
+        this.content = commentUpdate.content();
     }
 
     public void increaseLikeCount() {
@@ -108,7 +78,7 @@ public class Comment {
 
     public void decreaseLikeCount() {
         if (this.likeCount == 0) {
-            throw new LikeException(LIKE_CAN_NOT_BE_LESS_THAN_ZERO);
+            throw new CommentException(COMMENT_LIKE_CAN_NOT_BE_LESS_THAN_ZERO);
         }
         this.likeCount--;
     }
